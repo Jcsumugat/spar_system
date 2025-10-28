@@ -4,45 +4,78 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Violation extends Model
+class PermitRenewal extends Model
 {
     protected $fillable = [
+        'previous_permit_id',
+        'new_permit_id',
         'business_id',
-        'inspection_id',
-        'violation_type',
-        'description',
-        'severity',
-        'violation_date',
-        'compliance_deadline',
-        'status',
-        'resolution_date',
-        'resolution_notes',
+        'renewal_request_date',
+        'renewal_status',
+        'rejection_reason',
     ];
 
     protected $casts = [
-        'violation_date' => 'date',
-        'compliance_deadline' => 'date',
-        'resolution_date' => 'date',
+        'renewal_request_date' => 'date',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
+
+    // Relationships
+    public function previousPermit()
+    {
+        return $this->belongsTo(SanitaryPermit::class, 'previous_permit_id');
+    }
+
+    public function newPermit()
+    {
+        return $this->belongsTo(SanitaryPermit::class, 'new_permit_id');
+    }
 
     public function business()
     {
         return $this->belongsTo(Business::class);
     }
 
-    public function inspection()
+    // Scopes
+    public function scopePending($query)
     {
-        return $this->belongsTo(Inspection::class);
+        return $query->where('renewal_status', 'Pending');
     }
 
-    public function scopeOpen($query)
+    public function scopeUnderReview($query)
     {
-        return $query->whereIn('status', ['Open', 'Under Correction']);
+        return $query->where('renewal_status', 'Under Review');
     }
 
-    public function scopeOverdue($query)
+    public function scopeApproved($query)
     {
-        return $query->where('compliance_deadline', '<', now())
-            ->whereIn('status', ['Open', 'Under Correction']);
+        return $query->where('renewal_status', 'Approved');
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('renewal_status', 'Rejected');
+    }
+
+    // Helper Methods
+    public function isPending(): bool
+    {
+        return $this->renewal_status === 'Pending';
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->renewal_status === 'Approved';
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->renewal_status === 'Rejected';
+    }
+
+    public function requiresInspection(): bool
+    {
+        return $this->renewal_status === 'Inspection Required';
     }
 }
