@@ -30,38 +30,7 @@ class User extends Authenticatable
         'is_active' => 'boolean',
     ];
 
-    // Relationships
-    public function issuedPermits()
-    {
-        return $this->hasMany(SanitaryPermit::class, 'issued_by');
-    }
-
-    public function approvedPermits()
-    {
-        return $this->hasMany(SanitaryPermit::class, 'approved_by');
-    }
-
-    public function inspections()
-    {
-        return $this->hasMany(Inspection::class, 'inspector_id');
-    }
-
-    public function activityLogs()
-    {
-        return $this->hasMany(ActivityLog::class);
-    }
-
-    public function uploadedDocuments()
-    {
-        return $this->hasMany(DocumentAttachment::class, 'uploaded_by');
-    }
-
-    public function notifications()
-    {
-        return $this->hasMany(Notification::class);
-    }
-
-    // Role Checks
+    // Role check methods
     public function isAdmin(): bool
     {
         return $this->role === 'Admin';
@@ -82,50 +51,29 @@ class User extends Authenticatable
         return $this->role === 'Staff';
     }
 
-    public function hasRole($role): bool
+    // Relationships
+    public function inspections()
     {
-        return $this->role === $role;
+        return $this->hasMany(Inspection::class, 'inspector_id');
     }
 
-    public function hasAnyRole(array $roles): bool
+    public function issuedPermits()
     {
-        return in_array($this->role, $roles);
+        return $this->hasMany(SanitaryPermit::class, 'issued_by');
     }
 
-    // Permission Checks
-    public function canApprovePermits(): bool
+    public function approvedPermits()
     {
-        return in_array($this->role, ['Admin', 'Municipal Health Officer']);
+        return $this->hasMany(SanitaryPermit::class, 'approved_by');
     }
 
-    public function canConductInspections(): bool
+    public function notifications()
     {
-        return in_array($this->role, ['Admin', 'Municipal Health Officer', 'Sanitary Inspector']);
+        return $this->hasMany(Notification::class);
     }
 
-    public function canManageUsers(): bool
+    public function activityLogs()
     {
-        return $this->role === 'Admin';
-    }
-
-    public function canViewReports(): bool
-    {
-        return in_array($this->role, ['Admin', 'Municipal Health Officer']);
-    }
-
-    // Scopes
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
-    }
-
-    public function scopeInspectors($query)
-    {
-        return $query->whereIn('role', ['Sanitary Inspector', 'Municipal Health Officer', 'Admin']);
-    }
-
-    public function scopeByRole($query, $role)
-    {
-        return $query->where('role', $role);
+        return $this->hasMany(ActivityLog::class);
     }
 }

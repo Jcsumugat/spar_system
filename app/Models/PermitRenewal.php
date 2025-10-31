@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PermitRenewal extends Model
 {
@@ -22,19 +23,19 @@ class PermitRenewal extends Model
     ];
 
     // Relationships
-    public function previousPermit()
+    public function business(): BelongsTo
+    {
+        return $this->belongsTo(Business::class);
+    }
+
+    public function previousPermit(): BelongsTo
     {
         return $this->belongsTo(SanitaryPermit::class, 'previous_permit_id');
     }
 
-    public function newPermit()
+    public function newPermit(): BelongsTo
     {
         return $this->belongsTo(SanitaryPermit::class, 'new_permit_id');
-    }
-
-    public function business()
-    {
-        return $this->belongsTo(Business::class);
     }
 
     // Scopes
@@ -72,10 +73,5 @@ class PermitRenewal extends Model
     public function isRejected(): bool
     {
         return $this->renewal_status === 'Rejected';
-    }
-
-    public function requiresInspection(): bool
-    {
-        return $this->renewal_status === 'Inspection Required';
     }
 }

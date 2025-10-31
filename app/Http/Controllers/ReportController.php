@@ -294,81 +294,6 @@ class ReportController extends Controller
         ]);
     }
 
-    public function violations(Request $request)
-    {
-        $dateFrom = $request->input('date_from', now()->subYear()->toDateString());
-        $dateTo = $request->input('date_to', now()->toDateString());
-
-        $query = Violation::whereBetween('violation_date', [$dateFrom, $dateTo]);
-
-        // Statistics
-        $stats = [
-            'total_violations' => (clone $query)->count(),
-            'open' => (clone $query)->where('status', 'Open')->count(),
-            'under_correction' => (clone $query)->where('status', 'Under Correction')->count(),
-            'resolved' => (clone $query)->where('status', 'Resolved')->count(),
-            'unresolved' => (clone $query)->where('status', 'Unresolved')->count(),
-            'minor' => (clone $query)->where('severity', 'Minor')->count(),
-            'major' => (clone $query)->where('severity', 'Major')->count(),
-            'critical' => (clone $query)->where('severity', 'Critical')->count(),
-            'overdue' => Violation::overdue()->count(),
-        ];
-
-        // By severity
-        $bySeverity = Violation::select('severity', DB::raw('count(*) as total'))
-            ->whereBetween('violation_date', [$dateFrom, $dateTo])
-            ->groupBy('severity')
-            ->get();
-
-        // By status
-        $byStatus = Violation::select('status', DB::raw('count(*) as total'))
-            ->whereBetween('violation_date', [$dateFrom, $dateTo])
-            ->groupBy('status')
-            ->get();
-
-        // By type
-        $byType = Violation::select('violation_type', DB::raw('count(*) as total'))
-            ->whereBetween('violation_date', [$dateFrom, $dateTo])
-            ->groupBy('violation_type')
-            ->orderByDesc('total')
-            ->limit(10)
-            ->get();
-
-        // Monthly violations trend
-        $monthlyViolations = Violation::select(
-            DB::raw('DATE_FORMAT(violation_date, "%Y-%m") as month'),
-            DB::raw('count(*) as total')
-        )
-            ->whereBetween('violation_date', [$dateFrom, $dateTo])
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
-
-        // Businesses with most violations
-        $businessesWithViolations = Violation::join('businesses', 'violations.business_id', '=', 'businesses.id')
-            ->select('businesses.business_name', DB::raw('count(*) as total'))
-            ->whereBetween('violations.violation_date', [$dateFrom, $dateTo])
-            ->groupBy('businesses.business_name')
-            ->orderByDesc('total')
-            ->limit(10)
-            ->get();
-
-        // Resolution rate
-        $resolved = (clone $query)->where('status', 'Resolved')->count();
-        $total = (clone $query)->count();
-        $resolutionRate = $total > 0 ? round(($resolved / $total) * 100, 2) : 0;
-
-        return Inertia::render('Reports/Violations', [
-            'stats' => $stats,
-            'bySeverity' => $bySeverity,
-            'byStatus' => $byStatus,
-            'byType' => $byType,
-            'monthlyViolations' => $monthlyViolations,
-            'businessesWithViolations' => $businessesWithViolations,
-            'resolutionRate' => $resolutionRate,
-            'filters' => ['date_from' => $dateFrom, 'date_to' => $dateTo],
-        ]);
-    }
 
     public function renewals(Request $request)
     {
@@ -458,16 +383,6 @@ class ReportController extends Controller
             ->with('sanitaryPermits')
             ->get();
 
-        // Businesses with violations
-        $businessesWithOpenViolations = Business::active()
-            ->whereHas('violations', function ($query) {
-                $query->whereIn('status', ['Open', 'Under Correction']);
-            })
-            ->withCount(['violations' => function ($query) {
-                $query->whereIn('status', ['Open', 'Under Correction']);
-            }])
-            ->get();
-
         // Compliance by barangay
         $complianceByBarangay = Business::select('barangay')
             ->selectRaw('COUNT(*) as total_businesses')
@@ -505,7 +420,6 @@ class ReportController extends Controller
             'complianceRate' => $complianceRate,
             'businessesWithoutPermits' => $businessesWithoutPermits,
             'businessesWithExpiredPermits' => $businessesWithExpiredPermits,
-            'businessesWithOpenViolations' => $businessesWithOpenViolations,
             'complianceByBarangay' => $complianceByBarangay,
             'inspectionStats' => $inspectionStats,
         ]);
@@ -513,11 +427,7 @@ class ReportController extends Controller
 
     public function export(Request $request)
     {
-        $type = $request->input('type'); // businesses, permits, inspections, violations, renewals
-
-        // This would typically generate a CSV or Excel file
-        // For now, returning JSON as placeholder
-
+        $type = $request->input('type');
         $data = [];
         $filename = '';
 
@@ -533,10 +443,6 @@ class ReportController extends Controller
             case 'inspections':
                 $data = Inspection::with(['business', 'inspector'])->get();
                 $filename = 'inspections_report_' . now()->format('Y-m-d') . '.csv';
-                break;
-            case 'violations':
-                $data = Violation::with('business')->get();
-                $filename = 'violations_report_' . now()->format('Y-m-d') . '.csv';
                 break;
             case 'renewals':
                 $data = PermitRenewal::with(['business', 'previousPermit'])->get();

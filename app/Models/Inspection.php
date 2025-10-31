@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Inspection extends Model
 {
@@ -26,7 +28,6 @@ class Inspection extends Model
 
     protected $casts = [
         'inspection_date' => 'date',
-        'inspection_time' => 'datetime',
         'follow_up_date' => 'date',
         'overall_score' => 'decimal:2',
         'created_at' => 'datetime',
@@ -35,29 +36,24 @@ class Inspection extends Model
     ];
 
     // Relationships
-    public function business()
+    public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);
     }
 
-    public function permit()
+    public function permit(): BelongsTo
     {
         return $this->belongsTo(SanitaryPermit::class, 'permit_id');
     }
 
-    public function inspector()
+    public function inspector(): BelongsTo
     {
         return $this->belongsTo(User::class, 'inspector_id');
     }
 
-    public function checklistItems()
+    public function checklistItems(): HasMany
     {
         return $this->hasMany(InspectionChecklistItem::class);
-    }
-
-    public function violations()
-    {
-        return $this->hasMany(Violation::class);
     }
 
     public function documents()
@@ -68,12 +64,17 @@ class Inspection extends Model
     // Scopes
     public function scopePassed($query)
     {
-        return $query->where('result', 'Passed');
+        return $query->whereIn('result', ['Passed', 'Approved']);
     }
 
     public function scopeFailed($query)
     {
-        return $query->where('result', 'Failed');
+        return $query->whereIn('result', ['Failed', 'Denied']);
+    }
+
+    public function scopePassedWithConditions($query)
+    {
+        return $query->where('result', 'Passed with Conditions');
     }
 
     public function scopePending($query)
@@ -81,56 +82,88 @@ class Inspection extends Model
         return $query->where('result', 'Pending');
     }
 
-    public function scopeUpcoming($query)
+    public function scopeByInspector($query, $inspectorId)
     {
-        return $query->where('inspection_date', '>=', now())
-            ->where('result', 'Pending');
+        return $query->where('inspector_id', $inspectorId);
+    }
+
+    public function scopeThisMonth($query)
+    {
+        return $query->whereMonth('inspection_date', now()->month)
+            ->whereYear('inspection_date', now()->year);
+    }
+
+    public function scopeThisYear($query)
+    {
+        return $query->whereYear('inspection_date', now()->year);
     }
 
     // Helper Methods
-    public static function generateInspectionNumber()
+    public static function generateInspectionNumber(): string
     {
         $year = date('Y');
         $lastInspection = static::whereYear('created_at', $year)
             ->orderBy('id', 'desc')
             ->first();
 
-        if ($lastInspection) {
-            $lastNumber = intval(substr($lastInspection->inspection_number, -4));
-            $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-        } else {
-            $newNumber = '0001';
-        }
+        $sequence = $lastInspection ? (int) substr($lastInspection->inspection_number, -5) + 1 : 1;
 
-        return 'INS-' . $year . '-' . $newNumber;
+        return sprintf('INS-%s-%05d', $year, $sequence);
     }
 
     public function isPassed(): bool
     {
-        return $this->result === 'Passed';
+        return in_array($this->result, ['Passed', 'Approved']);
     }
 
     public function isFailed(): bool
     {
-        return $this->result === 'Failed';
+        return in_array($this->result, ['Failed', 'Denied']);
     }
 
-    public function hasNonCompliantItems(): bool
+    public function isPending(): bool
     {
-        return $this->checklistItems()
-            ->where('status', 'Non-Compliant')
-            ->exists();
+        return $this->result === 'Pending';
     }
 
-    public function getCompliancePercentageAttribute()
+    public function isPassedWithConditions(): bool
     {
-        $totalItems = $this->checklistItems()->count();
-        if ($totalItems === 0) return 0;
+        return $this->result === 'Passed with Conditions';
+    }
 
-        $compliantItems = $this->checklistItems()
-            ->where('status', 'Compliant')
-            ->count();
+    public function calculateScore(): float
+    {
+        $items = $this->checklistItems;
 
-        return round(($compliantItems / $totalItems) * 100, 2);
+        if ($items->isEmpty()) {
+            return 0;
+        }
+
+        $compliant = $items->where('status', 'Compliant')->count();
+        $total = $items->whereIn('status', ['Compliant', 'Non-Compliant'])->count();
+
+        if ($total === 0) {
+            return 0;
+        }
+
+        return round(($compliant / $total) * 100, 2);
+    }
+
+    public function labReport()
+    {
+        return $this->belongsTo(LabReport::class, 'business_id', 'business_id')
+            ->whereDate('created_at', $this->created_at->toDateString());
+    }
+
+    // Boot method
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($inspection) {
+            if (empty($inspection->inspection_number)) {
+                $inspection->inspection_number = static::generateInspectionNumber();
+            }
+        });
     }
 }

@@ -21,6 +21,7 @@ class Business extends Model
         'establishment_category',
         'number_of_employees',
         'is_active',
+        'permit_status', // Add this if it's not already in your migration
     ];
 
     protected $casts = [
@@ -42,11 +43,6 @@ class Business extends Model
         return $this->hasMany(Inspection::class);
     }
 
-    public function violations(): HasMany
-    {
-        return $this->hasMany(Violation::class);
-    }
-
     public function notifications(): HasMany
     {
         return $this->hasMany(Notification::class);
@@ -55,6 +51,11 @@ class Business extends Model
     public function renewals(): HasMany
     {
         return $this->hasMany(PermitRenewal::class);
+    }
+
+    public function labReports(): HasMany
+    {
+        return $this->hasMany(LabReport::class);
     }
 
     public function documents()
@@ -97,10 +98,22 @@ class Business extends Model
         return $this->inspections()->latest('inspection_date')->first();
     }
 
-    public function hasOpenViolations(): bool
+    public function getLatestLabReportAttribute()
     {
-        return $this->violations()
-            ->whereIn('status', ['Open', 'Under Correction'])
+        return $this->labReports()->latest('submitted_at')->first();
+    }
+
+    public function hasApprovedLabReport(): bool
+    {
+        return $this->labReports()
+            ->where('status', 'approved')
+            ->exists();
+    }
+
+    public function hasPendingLabReport(): bool
+    {
+        return $this->labReports()
+            ->where('status', 'pending')
             ->exists();
     }
 }

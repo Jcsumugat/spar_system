@@ -30,7 +30,7 @@ class BusinessController extends Controller
             $query->where('business_type', $request->business_type);
         }
 
-        $businesses = $query->withCount(['sanitaryPermits', 'inspections', 'violations'])
+        $businesses = $query->withCount(['sanitaryPermits', 'inspections',])
             ->latest('created_at')
             ->paginate(15);
 
@@ -79,7 +79,6 @@ class BusinessController extends Controller
         $business->load([
             'sanitaryPermits.issuedBy',
             'inspections.inspector',
-            'violations'
         ]);
 
         return Inertia::render('Businesses/Show', [
@@ -99,7 +98,7 @@ class BusinessController extends Controller
         $validated = $request->validate([
             'business_name' => 'required|string|max:255',
             'owner_name' => 'required|string|max:255',
-            'business_type' => 'required|in:Food Establishment,Non-Food Establishment',
+            'business_type' => 'required|in:Food,Non-Food',
             'address' => 'required|string',
             'barangay' => 'required|string|max:255',
             'contact_number' => 'required|string|max:255',

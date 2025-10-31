@@ -15,12 +15,18 @@ class PermitController extends Controller
     {
         $query = SanitaryPermit::with(['business', 'issuedBy', 'approvedBy']);
 
-        // Filters
+        // Filter by permit type
+        if ($request->has('permit_type') && $request->permit_type !== 'all') {
+            $query->where('permit_type', $request->permit_type);
+        }
+
+        // Filter by status
         if ($request->has('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
 
-        if ($request->has('search')) {
+        // Search filter
+        if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('permit_number', 'like', "%{$search}%")
@@ -34,7 +40,7 @@ class PermitController extends Controller
 
         return Inertia::render('Permits/Index', [
             'permits' => $permits,
-            'filters' => $request->only(['status', 'search']),
+            'filters' => $request->only(['permit_type', 'search', 'status']),
         ]);
     }
 

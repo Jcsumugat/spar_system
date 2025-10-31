@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Business;
 use App\Models\SanitaryPermit;
 use App\Models\Inspection;
-use App\Models\Violation;
 use App\Models\PermitRenewal;
 use App\Models\Notification;
 use Illuminate\Http\Request;
@@ -34,11 +33,6 @@ class DashboardController extends Controller
             'passed_inspections' => Inspection::passed()->count(),
             'failed_inspections' => Inspection::failed()->count(),
             'pending_inspections' => Inspection::pending()->count(),
-            'open_violations' => Violation::open()->count(),
-            'overdue_violations' => Violation::overdue()->count(),
-            'critical_violations' => Violation::where('severity', 'Critical')
-                ->whereIn('status', ['Open', 'Under Correction'])
-                ->count(),
         ];
 
         // Charts Data
@@ -68,12 +62,6 @@ class DashboardController extends Controller
             // Inspections by result
             'inspectionsByResult' => Inspection::select('result', DB::raw('count(*) as total'))
                 ->groupBy('result')
-                ->get(),
-
-            // Violations by severity
-            'violationsBySeverity' => Violation::select('severity', DB::raw('count(*) as total'))
-                ->whereIn('status', ['Open', 'Under Correction'])
-                ->groupBy('severity')
                 ->get(),
 
             // Monthly inspections trend (last 12 months)
@@ -109,12 +97,6 @@ class DashboardController extends Controller
                 ->limit(5)
                 ->get(),
 
-            'violations' => Violation::with('business')
-                ->whereIn('status', ['Open', 'Under Correction'])
-                ->latest('violation_date')
-                ->limit(5)
-                ->get(),
-
             'renewals' => PermitRenewal::with(['business', 'previousPermit'])
                 ->pending()
                 ->latest('created_at')
@@ -137,13 +119,6 @@ class DashboardController extends Controller
                 ->whereDoesntHave('sanitaryPermits', function ($query) {
                     $query->where('status', 'Active');
                 })
-                ->limit(10)
-                ->get(),
-
-            // Overdue violations
-            'overdueViolations' => Violation::with('business')
-                ->overdue()
-                ->orderBy('compliance_deadline')
                 ->limit(10)
                 ->get(),
 
