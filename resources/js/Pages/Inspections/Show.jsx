@@ -95,6 +95,7 @@ export default function Show({ auth, inspection }) {
                 findings,
                 recommendations,
                 pass_with_conditions: passWithConditions,
+                document_statuses: documentStatuses, // ✅ ADDED: Send document statuses
             },
             {
                 preserveScroll: true,
@@ -124,6 +125,7 @@ export default function Show({ auth, inspection }) {
             {
                 findings,
                 recommendations,
+                document_statuses: documentStatuses, // ✅ ADDED: Send document statuses
             },
             {
                 preserveScroll: true,
@@ -135,13 +137,12 @@ export default function Show({ auth, inspection }) {
         );
     };
 
+    // ✅ UPDATED: Match database enum values (Approved, Denied, Pending)
     const getStatusBadge = (status) => {
         const styles = {
-            Passed: "bg-green-100 text-green-800 border-green-200",
-            Failed: "bg-red-100 text-red-800 border-red-200",
+            Approved: "bg-green-100 text-green-800 border-green-200",
+            Denied: "bg-red-100 text-red-800 border-red-200",
             Pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
-            "Passed with Conditions":
-                "bg-blue-100 text-blue-800 border-blue-200",
         };
 
         return (
@@ -180,19 +181,55 @@ export default function Show({ auth, inspection }) {
         );
     };
 
+    // ✅ UPDATED: Check for "Pending" (matches database enum)
     const isPending = inspection.result === "Pending";
 
-    // Get documents from the inspection
-    const documents = inspection.documents || [];
+    // ✅ Get lab report from inspection
+    const labReport = inspection.lab_report;
 
-    // Map documents by type
+    // ✅ Map documents from lab report
     const documentsByType = {
-        fecalysis: documents.find((doc) => doc.document_type === "fecalysis"),
-        xray_sputum: documents.find(
-            (doc) => doc.document_type === "xray_sputum"
-        ),
-        receipt: documents.find((doc) => doc.document_type === "receipt"),
-        dti: documents.find((doc) => doc.document_type === "dti"),
+        fecalysis: labReport
+            ? {
+                  file_path: labReport.fecalysis_photo_url?.replace(
+                      "/storage/",
+                      ""
+                  ),
+                  uploader: labReport.submitted_by,
+                  created_at: labReport.submitted_at,
+                  remarks: labReport.fecalysis_remarks,
+              }
+            : null,
+        xray_sputum: labReport
+            ? {
+                  file_path: labReport.xray_sputum_photo_url?.replace(
+                      "/storage/",
+                      ""
+                  ),
+                  uploader: labReport.submitted_by,
+                  created_at: labReport.submitted_at,
+                  remarks: labReport.xray_sputum_remarks,
+              }
+            : null,
+        receipt: labReport
+            ? {
+                  file_path: labReport.receipt_photo_url?.replace(
+                      "/storage/",
+                      ""
+                  ),
+                  uploader: labReport.submitted_by,
+                  created_at: labReport.submitted_at,
+                  remarks: labReport.receipt_remarks,
+              }
+            : null,
+        dti: labReport
+            ? {
+                  file_path: labReport.dti_photo_url?.replace("/storage/", ""),
+                  uploader: labReport.submitted_by,
+                  created_at: labReport.submitted_at,
+                  remarks: labReport.dti_remarks,
+              }
+            : null,
     };
 
     const documentLabels = {

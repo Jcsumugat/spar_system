@@ -150,8 +150,9 @@ export default function Edit({ auth, labReport, businesses }) {
                                                 e.target.value
                                             )
                                         }
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-100 cursor-not-allowed"
                                         required
+                                        disabled
                                     >
                                         <option value="">Select type...</option>
                                         <option value="new">

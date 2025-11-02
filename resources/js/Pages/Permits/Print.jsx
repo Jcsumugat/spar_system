@@ -17,12 +17,6 @@ export default function Print({ permit }) {
             .toUpperCase();
     };
 
-    const getExpiryDate = (issueDate) => {
-        const date = new Date(issueDate);
-        date.setFullYear(date.getFullYear() + 1);
-        return formatDate(date);
-    };
-
     return (
         <>
             <Head title="Print Sanitary Permit" />
@@ -37,6 +31,14 @@ export default function Print({ permit }) {
                     .no-print {
                         display: none !important;
                     }
+
+                    .permit-container::before {
+                        opacity: 0.12;
+                    }
+                }
+
+                * {
+                    font-family: Arial, sans-serif;
                 }
 
                 body {
@@ -45,8 +47,13 @@ export default function Print({ permit }) {
                 }
 
                 .permit-container {
-                    background: #fff;
-                    max-width: 800px;
+                    background: #fff url('/images/tibiao_logo.png') no-repeat center center;
+                    background-size: 400px 400px;
+                    background-attachment: fixed;
+                    background-blend-mode: lighten;
+                    opacity: 0.95;
+                    max-width: 750px;
+                    min-height: 900px;
                     margin: 20px auto;
                     padding: 40px;
                     border: 2px solid #000;
@@ -60,22 +67,22 @@ export default function Print({ permit }) {
                     position: absolute;
                     inset: 0;
                     background: url('/images/tibiao_logo.png') no-repeat center center;
-                    background-size: 500px 500px;
-                    opacity: 0.12;
+                    background-size: 400px 400px;
+                    opacity: 0.2;
                     z-index: 0;
-                    pointer-events: none;
                 }
 
                 .permit-container * {
                     position: relative;
                     z-index: 1;
+                    font-family: Arial, sans-serif;
                 }
 
                 .permit-header {
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    margin-bottom: 20px;
+                    margin-bottom: 10px;
                 }
 
                 .permit-header .header-text {
@@ -84,9 +91,8 @@ export default function Print({ permit }) {
                 }
 
                 .header-text h6 {
-                    margin: 0;
-                    font-size: 14px;
-                    font-weight: 600;
+                    margin-bottom: 0;
+                    font-family: Arial, sans-serif;
                 }
 
                 .permit-title {
@@ -95,8 +101,19 @@ export default function Print({ permit }) {
                     border: 2px solid #000;
                     display: inline-block;
                     padding: 5px 20px;
-                    margin: 20px 0;
+                    margin: 30px 0 40px 0;
                     background: #fff;
+                    font-family: Arial, sans-serif;
+                }
+
+                .content-section {
+                    margin-top: 10px;
+                }
+
+                .content-section p {
+                    margin: 15px 0;
+                    line-height: 1.8;
+                    font-family: Arial, sans-serif;
                 }
 
                 .text-underline {
@@ -104,26 +121,20 @@ export default function Print({ permit }) {
                 }
 
                 .signature {
-                    margin-top: 50px;
+                    margin-top: 40px;
                 }
 
                 .signature p {
-                    margin: 0;
-                }
-
-                .content-section p {
-                    margin: 10px 0;
-                    line-height: 1.6;
+                    font-family: Arial, sans-serif;
                 }
             `}</style>
 
-            {/* Print Button - Hidden on print */}
             <div
                 className="no-print"
                 style={{
                     textAlign: "center",
                     padding: "20px",
-                    maxWidth: "800px",
+                    maxWidth: "650px",
                     margin: "0 auto",
                 }}
             >
@@ -139,6 +150,7 @@ export default function Print({ permit }) {
                         fontWeight: "500",
                         cursor: "pointer",
                         marginRight: "10px",
+                        fontFamily: "Arial, sans-serif",
                     }}
                 >
                     🖨️ Print Permit
@@ -154,6 +166,7 @@ export default function Print({ permit }) {
                         fontSize: "16px",
                         fontWeight: "500",
                         cursor: "pointer",
+                        fontFamily: "Arial, sans-serif",
                     }}
                 >
                     ← Back
@@ -169,11 +182,11 @@ export default function Print({ permit }) {
                         width="80"
                     />
                     <div className="header-text">
-                        <h6>Republic of the Philippines</h6>
-                        <h6>Province of Antique</h6>
-                        <h6>MUNICIPALITY OF TIBIAO</h6>
-                        <h6 style={{ textDecoration: "underline" }}>
-                            Office of the Municipal Health Officer
+                        <h6 className="mb-0">Republic of the Philippines</h6>
+                        <h6 className="mb-0">Province of Antique</h6>
+                        <h6 className="mb-0">MUNICIPALITY OF TIBIAO</h6>
+                        <h6>
+                            <u>Office of the Municipal Health Officer</u>
                         </h6>
                     </div>
                     <img
@@ -216,7 +229,7 @@ export default function Print({ permit }) {
                     <p>
                         <strong>DATE ISSUED:</strong>{" "}
                         {permit?.issue_date
-                            ? formatDate(permit.issue_date)
+                            ? formatDate(permit.issue_date) + ","
                             : "__________"}
                     </p>
 
@@ -227,12 +240,12 @@ export default function Print({ permit }) {
                             style={{ fontWeight: "bold" }}
                         >
                             {permit?.expiry_date
-                                ? formatDate(permit.expiry_date)
+                                ? formatDate(permit.expiry_date) + ","
                                 : "__________"}
                         </span>
                     </p>
 
-                    <p style={{ marginTop: "30px" }}>
+                    <p style={{ marginTop: "20px" }}>
                         This permit is not transferable and will be revoked for
                         violation of the Sanitary Rules, Laws or Regulations of
                         P.D. 522 & P.D. 856 and Pertinent Local Ordinances.
@@ -244,15 +257,15 @@ export default function Print({ permit }) {
                     <p>
                         <strong>Recommending approval:</strong>
                     </p>
-                    <p style={{ marginTop: "40px", marginBottom: 0 }}>
+                    <p className="mb-0 mt-4">
                         <strong>JULINETTE JOY D. SALVACION, RN</strong>
                     </p>
                     <p>Sanitation Inspector I</p>
-
-                    <p style={{ marginTop: "50px", marginBottom: 0 }}>
+                    <br></br>
+                    <p className="mb-0 mt-5">
                         <strong>Approved:</strong>
                     </p>
-                    <p style={{ marginTop: "40px", marginBottom: 0 }}>
+                    <p className="mb-0 mt-4">
                         <strong>RUE JOANNA F. ESPAÑOLA, M.D.</strong>
                     </p>
                     <p>Municipal Health Officer</p>

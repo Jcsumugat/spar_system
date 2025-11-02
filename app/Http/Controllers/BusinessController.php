@@ -6,6 +6,7 @@ use App\Models\Business;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class BusinessController extends Controller
 {

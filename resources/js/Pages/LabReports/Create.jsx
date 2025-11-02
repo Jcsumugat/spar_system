@@ -287,9 +287,14 @@ function DocumentUploadSection({
     );
 }
 
-export default function Create({ auth, businesses }) {
+export default function Create({
+    auth,
+    businesses,
+    selectedBusinessId,
+    selectedBusiness: preSelectedBusiness,
+}) {
     const { data, setData, post, processing, errors } = useForm({
-        business_id: "",
+        business_id: selectedBusinessId || "",
         application_type: "",
         fecalysis_photo: null,
         xray_sputum_photo: null,

@@ -30,25 +30,42 @@ class User extends Authenticatable
         'is_active' => 'boolean',
     ];
 
-    // Role check methods
-    public function isAdmin(): bool
+    // Role checking methods
+    public function isAdmin()
     {
-        return $this->role === 'Admin';
+        return strtolower($this->role) === 'admin';
     }
 
-    public function isMunicipalHealthOfficer(): bool
+    public function isStaff()
     {
-        return $this->role === 'Municipal Health Officer';
+        return strtolower($this->role) === 'staff';
     }
 
-    public function isSanitaryInspector(): bool
+    public function isSanitaryInspector()
     {
-        return $this->role === 'Sanitary Inspector';
+        // In your system, only admins can inspect
+        return $this->isAdmin();
     }
 
-    public function isStaff(): bool
+    public function isMunicipalHealthOfficer()
     {
-        return $this->role === 'Staff';
+        // In your system, only admins have this authority
+        return $this->isAdmin();
+    }
+
+    public function canInspect()
+    {
+        return $this->isAdmin();
+    }
+
+    public function canApprovePermits()
+    {
+        return $this->isAdmin();
+    }
+
+    public function canIssuePermits()
+    {
+        return $this->isAdmin();
     }
 
     // Relationships

@@ -161,7 +161,7 @@ CREATE TABLE `inspections` (
   `inspection_date` date NOT NULL,
   `inspection_time` time DEFAULT NULL,
   `inspector_id` bigint(20) UNSIGNED NOT NULL,
-  `inspection_type` enum('Initial','Renewal','Follow-up','Complaint-based','Random') NOT NULL,
+  `inspection_type` enum('Initial','Renewal') NOT NULL,
   `result` enum('Approved','Denied','Pending') DEFAULT 'Pending',
   `overall_score` decimal(5,2) DEFAULT NULL,
   `findings` text DEFAULT NULL,

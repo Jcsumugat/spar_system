@@ -21,7 +21,7 @@ class Business extends Model
         'establishment_category',
         'number_of_employees',
         'is_active',
-        'permit_status', // Add this if it's not already in your migration
+        'permit_status',
     ];
 
     protected $casts = [

@@ -147,6 +147,16 @@ class SanitaryPermit extends Model
             ->exists();
     }
 
+    public function issuedByUser()
+    {
+        return $this->belongsTo(User::class, 'issued_by');
+    }
+
+    public function approvedByUser()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
     // Boot method for automatic status updates
     protected static function boot()
     {

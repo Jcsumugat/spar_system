@@ -67,7 +67,7 @@ export default function Auth() {
                                 <div className="mb-8">
                                     <div className="flex items-center space-x-4 mb-6">
                                         <img
-                                            src="/images/tibiao-logo.png"
+                                            src="/images/tibiao_logo.png"
                                             alt="Tibiao Logo"
                                             className="w-16 h-16 object-contain bg-white rounded-full p-2"
                                         />

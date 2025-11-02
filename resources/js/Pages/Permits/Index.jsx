@@ -148,6 +148,15 @@ export default function Index({ auth, permits, filters }) {
 
             <div className="py-6">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    {/* Page Header */}
+                    <div className="mb-6">
+                        <h2 className="text-2xl font-bold text-gray-900">
+                            Permits
+                        </h2>
+                        <p className="mt-1 text-sm text-gray-600">
+                            Manage sanitary permits and certifications
+                        </p>
+                    </div>
                     {/* Search and Filter Section */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
                         <div className="space-y-4">
@@ -399,8 +408,8 @@ export default function Index({ auth, permits, filters }) {
                                                             permit.status
                                                         )}
                                                     </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                        <div className="flex flex-col items-end gap-2">
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                        <div className="flex flex-col items-center gap-2">
                                                             <div className="flex items-center gap-2">
                                                                 <Link
                                                                     href={route(
@@ -411,16 +420,6 @@ export default function Index({ auth, permits, filters }) {
                                                                     title="View"
                                                                 >
                                                                     <Eye className="w-4 h-4" />
-                                                                </Link>
-                                                                <Link
-                                                                    href={route(
-                                                                        "permits.edit",
-                                                                        permit.id
-                                                                    )}
-                                                                    className="text-green-600 hover:text-green-900 p-1 rounded hover:bg-green-50"
-                                                                    title="Edit"
-                                                                >
-                                                                    <Edit className="w-4 h-4" />
                                                                 </Link>
                                                                 <button
                                                                     onClick={() =>

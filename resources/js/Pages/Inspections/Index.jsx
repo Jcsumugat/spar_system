@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Head, Link, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import RoleButton from "@/Components/RoleButton";
 import { Search, Plus, Eye, Filter, ClipboardCheck } from "lucide-react";
 
 export default function Index({ auth, inspections, filters }) {
@@ -48,8 +49,8 @@ export default function Index({ auth, inspections, filters }) {
 
     const getResultBadge = (result) => {
         const styles = {
-            Passed: "bg-green-100 text-green-800 border-green-200",
-            Failed: "bg-red-100 text-red-800 border-red-200",
+            Approved: "bg-green-100 text-green-800 border-green-200",
+            Rejected: "bg-red-100 text-red-800 border-red-200",
             Pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
             "Passed with Conditions":
                 "bg-blue-100 text-blue-800 border-blue-200",
@@ -117,6 +118,15 @@ export default function Index({ auth, inspections, filters }) {
 
             <div className="py-6">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    {/* Page Header */}
+                    <div className="mb-6">
+                        <h2 className="text-2xl font-bold text-gray-900">
+                            Inspections
+                        </h2>
+                        <p className="mt-1 text-sm text-gray-600">
+                            Track and manage sanitary inspections for businesses
+                        </p>
+                    </div>
                     {/* Search and Filter Section */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
                         <div className="space-y-4">
@@ -339,16 +349,18 @@ export default function Index({ auth, inspections, filters }) {
                                                     )}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                                    <Link
+                                                    <RoleButton
                                                         href={route(
                                                             "inspections.show",
                                                             inspection.id
                                                         )}
+                                                        allowedRoles={["Admin"]}
+                                                        disabledMessage="Only administrators can perform inspections"
                                                         className="inline-flex items-center gap-2 px-4 py-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors"
                                                     >
                                                         <Eye className="w-4 h-4" />
                                                         Inspect
-                                                    </Link>
+                                                    </RoleButton>
                                                 </td>
                                             </tr>
                                         ))

@@ -27,16 +27,22 @@ class LabReportController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new lab report.
-     */
-    public function create()
+    public function create(Request $request)
     {
         $businesses = Business::active()
             ->get(['id', 'business_name', 'owner_name', 'permit_status']);
 
+        $selectedBusinessId = $request->query('business_id');
+
+        $selectedBusiness = null;
+        if ($selectedBusinessId) {
+            $selectedBusiness = Business::find($selectedBusinessId);
+        }
+
         return Inertia::render('LabReports/Create', [
-            'businesses' => $businesses
+            'businesses' => $businesses,
+            'selectedBusinessId' => $selectedBusinessId,
+            'selectedBusiness' => $selectedBusiness,
         ]);
     }
 

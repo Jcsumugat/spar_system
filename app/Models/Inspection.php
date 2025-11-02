@@ -152,7 +152,7 @@ class Inspection extends Model
     public function labReport()
     {
         return $this->belongsTo(LabReport::class, 'business_id', 'business_id')
-            ->whereDate('created_at', $this->created_at->toDateString());
+            ->latest();
     }
 
     // Boot method

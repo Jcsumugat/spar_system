@@ -6,6 +6,7 @@ use App\Models\Inspection;
 use App\Models\Business;
 use App\Models\SanitaryPermit;
 use App\Models\User;
+use App\Models\LabReport;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -64,7 +65,7 @@ class InspectionController extends Controller
             'inspection_date' => 'required|date',
             'inspection_time' => 'nullable|date_format:H:i',
             'inspector_id' => 'required|exists:users,id',
-            'inspection_type' => 'required|in:Initial,Renewal,Follow-up,Complaint-based,Random',
+            'inspection_type' => 'required|in:Initial,Renewal',
             'findings' => 'nullable|string',
             'recommendations' => 'nullable|string',
         ]);
@@ -86,12 +87,17 @@ class InspectionController extends Controller
 
     public function show(Inspection $inspection)
     {
+        $labReport = LabReport::where('business_id', $inspection->business_id)
+            ->whereDate('created_at', $inspection->created_at->toDateString())
+            ->with('submittedBy')
+            ->first();
+
         $inspection->load([
             'business',
             'inspector',
             'permit',
-            'documents.uploader'
         ]);
+        $inspection->lab_report = $labReport;
 
         return Inertia::render('Inspections/Show', [
             'inspection' => $inspection,
@@ -120,8 +126,8 @@ class InspectionController extends Controller
             'inspection_date' => 'required|date',
             'inspection_time' => 'nullable|date_format:H:i',
             'inspector_id' => 'required|exists:users,id',
-            'inspection_type' => 'required|in:Initial,Renewal,Follow-up,Complaint-based,Random',
-            'result' => 'required|in:Passed,Failed,Pending,Passed with Conditions',
+            'inspection_type' => 'required|in:Initial,Renewal',
+            'result' => 'required|in:Approved,Denied,Pending',
             'findings' => 'nullable|string',
             'recommendations' => 'nullable|string',
             'follow_up_date' => 'nullable|date|after:inspection_date',
@@ -143,6 +149,11 @@ class InspectionController extends Controller
 
     public function destroy(Inspection $inspection)
     {
+        // Only allow deletion if inspection is pending
+        if ($inspection->result !== 'Pending') {
+            return back()->with('error', 'Cannot delete a completed inspection.');
+        }
+
         $inspection->delete();
 
         ActivityLog::logActivity(
@@ -157,6 +168,11 @@ class InspectionController extends Controller
 
     public function saveProgress(Request $request, Inspection $inspection)
     {
+        // Only allow saving progress if inspection is still pending
+        if ($inspection->result !== 'Pending') {
+            return back()->with('error', 'Cannot update a completed inspection.');
+        }
+
         $validated = $request->validate([
             'findings' => 'nullable|string',
             'recommendations' => 'nullable|string',
@@ -175,26 +191,62 @@ class InspectionController extends Controller
 
     public function pass(Request $request, Inspection $inspection)
     {
+        // Validate inspection is still pending
+        if ($inspection->result !== 'Pending') {
+            return back()->with('error', 'This inspection has already been completed.');
+        }
+
         $validated = $request->validate([
             'findings' => 'nullable|string',
             'recommendations' => 'nullable|string',
             'pass_with_conditions' => 'boolean',
+            'document_statuses' => 'required|array',
+            'document_statuses.*' => 'required|in:approved,rejected',
         ]);
 
-        $result = $validated['pass_with_conditions'] ? 'Passed with Conditions' : 'Passed';
+        // Check all documents are approved
+        $allApproved = collect($validated['document_statuses'])->every(function ($status) {
+            return $status === 'approved';
+        });
 
+        if (!$allApproved) {
+            return back()->with('error', 'All documents must be approved to pass the inspection.');
+        }
+
+        // Update inspection
         $inspection->update([
-            'result' => $result,
+            'result' => 'Approved',
             'findings' => $validated['findings'],
             'recommendations' => $validated['recommendations'],
         ]);
 
+        // Update associated lab report
+        $labReport = LabReport::where('business_id', $inspection->business_id)
+            ->whereDate('created_at', $inspection->created_at->toDateString())
+            ->first();
+
+        if ($labReport) {
+            $labReport->update([
+                'status' => 'approved',
+                'overall_result' => 'pass',
+                'fecalysis_result' => $validated['document_statuses']['fecalysis'] === 'approved' ? 'pass' : 'fail',
+                'xray_sputum_result' => $validated['document_statuses']['xray_sputum'] === 'approved' ? 'pass' : 'fail',
+                'receipt_result' => $validated['document_statuses']['receipt'] === 'approved' ? 'pass' : 'fail',
+                'dti_result' => $validated['document_statuses']['dti'] === 'approved' ? 'pass' : 'fail',
+                'inspector_remarks' => $validated['recommendations'],
+                'inspected_by' => auth()->id(),
+                'inspected_at' => now(),
+            ]);
+        }
+
         // Create or update the sanitary permit
+        $permitType = $inspection->inspection_type === 'Initial' ? 'New' : 'Renewal';
+
         $permit = SanitaryPermit::updateOrCreate(
             ['business_id' => $inspection->business_id],
             [
                 'permit_number' => SanitaryPermit::generatePermitNumber(),
-                'permit_type' => $inspection->inspection_type === 'Initial' ? 'New' : 'Renewal',
+                'permit_type' => $permitType,
                 'issue_date' => now(),
                 'expiry_date' => now()->addYear(),
                 'issued_by' => auth()->id(),
@@ -204,35 +256,67 @@ class InspectionController extends Controller
             ]
         );
 
+        // Update inspection with permit_id
+        $inspection->update(['permit_id' => $permit->id]);
+
         ActivityLog::logActivity(
-            'passed',
+            'approved',
             $inspection,
-            'Passed inspection ' . $inspection->inspection_number . ' and issued permit ' . $permit->permit_number
+            'Approved inspection ' . $inspection->inspection_number . ' and issued permit ' . $permit->permit_number
         );
 
-        return back()->with('success', 'Inspection passed and permit issued successfully.');
+        return redirect()->route('inspections.show', $inspection)
+            ->with('success', 'Inspection approved successfully! Sanitary permit has been issued.');
     }
 
     public function fail(Request $request, Inspection $inspection)
     {
+        // Validate inspection is still pending
+        if ($inspection->result !== 'Pending') {
+            return back()->with('error', 'This inspection has already been completed.');
+        }
+
         $validated = $request->validate([
             'findings' => 'required|string',
             'recommendations' => 'nullable|string',
+            'document_statuses' => 'required|array',
+            'document_statuses.*' => 'required|in:approved,rejected',
         ]);
 
+        // Update inspection
         $inspection->update([
-            'result' => 'Failed',
+            'result' => 'Denied',
             'findings' => $validated['findings'],
             'recommendations' => $validated['recommendations'],
         ]);
 
+        // Update associated lab report
+        $labReport = LabReport::where('business_id', $inspection->business_id)
+            ->whereDate('created_at', $inspection->created_at->toDateString())
+            ->first();
+
+        if ($labReport) {
+            $labReport->update([
+                'status' => 'rejected',
+                'overall_result' => 'fail',
+                'fecalysis_result' => $validated['document_statuses']['fecalysis'] === 'approved' ? 'pass' : 'fail',
+                'xray_sputum_result' => $validated['document_statuses']['xray_sputum'] === 'approved' ? 'pass' : 'fail',
+                'receipt_result' => $validated['document_statuses']['receipt'] === 'approved' ? 'pass' : 'fail',
+                'dti_result' => $validated['document_statuses']['dti'] === 'approved' ? 'pass' : 'fail',
+                'inspector_remarks' => $validated['findings'],
+                'inspected_by' => auth()->id(),
+                'inspected_at' => now(),
+            ]);
+        }
+
         ActivityLog::logActivity(
-            'failed',
+            'denied',
             $inspection,
-            'Failed inspection ' . $inspection->inspection_number
+            'Denied inspection ' . $inspection->inspection_number
         );
 
-        return back()->with('success', 'Inspection marked as failed.');
+        return redirect()->route('inspections.show', $inspection)
+            ->with('success', 'Inspection has been marked as denied.');
     }
 
     public function print(Inspection $inspection)

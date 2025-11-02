@@ -64,12 +64,11 @@ export default function Index({ auth, labReports }) {
     };
 
     const getResultBadge = (result, status) => {
-        // If status is pending, show "Pending Inspection" instead of result
         if (status === "pending" || !result) {
             return (
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                     <Clock className="w-3 h-3 mr-1" />
-                    Pending Inspection
+                    Pending
                 </span>
             );
         }
