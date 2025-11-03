@@ -27,7 +27,6 @@ class NotificationController extends Controller
     public function getUnread()
     {
         $notifications = Notification::forUser(auth()->id())
-            ->unread()
             ->latest()
             ->limit(10)
             ->get();

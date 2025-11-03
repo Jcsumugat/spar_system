@@ -324,7 +324,6 @@ class LabReport extends Model
         return $this->dti_photo ? Storage::url($this->dti_photo) : null;
     }
 
-    // Add these to your $appends array so they're always included
     protected $appends = [
         'fecalysis_photo_url',
         'xray_sputum_photo_url',

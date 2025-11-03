@@ -523,45 +523,55 @@ export default function Show({ auth, inspection }) {
                                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                                             Review Decision
                                                         </label>
-                                                        <div className="flex gap-2">
-                                                            <button
-                                                                onClick={() =>
-                                                                    handleDocumentStatusChange(
-                                                                        type,
+                                                        <div className="space-y-2">
+                                                            <label className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                                                <input
+                                                                    type="radio"
+                                                                    name={`document-${type}`}
+                                                                    checked={
+                                                                        documentStatuses[
+                                                                            type
+                                                                        ] ===
                                                                         "approved"
-                                                                    )
-                                                                }
-                                                                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
-                                                                    documentStatuses[
-                                                                        type
-                                                                    ] ===
-                                                                    "approved"
-                                                                        ? "bg-green-600 text-white"
-                                                                        : "bg-green-50 text-green-700 hover:bg-green-100"
-                                                                }`}
-                                                            >
-                                                                <CheckCircle className="w-4 h-4 inline mr-1" />
-                                                                Approve
-                                                            </button>
-                                                            <button
-                                                                onClick={() =>
-                                                                    handleDocumentStatusChange(
-                                                                        type,
+                                                                    }
+                                                                    onChange={() =>
+                                                                        handleDocumentStatusChange(
+                                                                            type,
+                                                                            "approved"
+                                                                        )
+                                                                    }
+                                                                    className="w-4 h-4 text-green-600 focus:ring-2 focus:ring-green-500"
+                                                                />
+                                                                <CheckCircle className="w-5 h-5 text-green-600" />
+                                                                <span className="text-sm font-medium text-gray-700">
+                                                                    Approve
+                                                                    Document
+                                                                </span>
+                                                            </label>
+                                                            <label className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                                                <input
+                                                                    type="radio"
+                                                                    name={`document-${type}`}
+                                                                    checked={
+                                                                        documentStatuses[
+                                                                            type
+                                                                        ] ===
                                                                         "rejected"
-                                                                    )
-                                                                }
-                                                                className={`flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
-                                                                    documentStatuses[
-                                                                        type
-                                                                    ] ===
-                                                                    "rejected"
-                                                                        ? "bg-red-600 text-white"
-                                                                        : "bg-red-50 text-red-700 hover:bg-red-100"
-                                                                }`}
-                                                            >
-                                                                <XCircle className="w-4 h-4 inline mr-1" />
-                                                                Reject
-                                                            </button>
+                                                                    }
+                                                                    onChange={() =>
+                                                                        handleDocumentStatusChange(
+                                                                            type,
+                                                                            "rejected"
+                                                                        )
+                                                                    }
+                                                                    className="w-4 h-4 text-red-600 focus:ring-2 focus:ring-red-500"
+                                                                />
+                                                                <XCircle className="w-5 h-5 text-red-600" />
+                                                                <span className="text-sm font-medium text-gray-700">
+                                                                    Reject
+                                                                    Document
+                                                                </span>
+                                                            </label>
                                                         </div>
                                                     </div>
                                                 )}

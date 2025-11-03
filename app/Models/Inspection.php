@@ -51,10 +51,6 @@ class Inspection extends Model
         return $this->belongsTo(User::class, 'inspector_id');
     }
 
-    public function checklistItems(): HasMany
-    {
-        return $this->hasMany(InspectionChecklistItem::class);
-    }
 
     public function documents()
     {

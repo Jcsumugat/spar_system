@@ -317,17 +317,17 @@ export default function Index({ auth, businesses, barangays, filters }) {
                                 </div>
 
                                 {/* Action Buttons */}
-                                <div className="flex gap-1">
+                                <div className="flex gap-3">
                                     <button
                                         type="submit"
-                                        className="flex-1 lg:flex-none px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                        className="flex-1 lg:flex-none px-3 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                                     >
                                         Search
                                     </button>
                                     <button
                                         type="button"
                                         onClick={handleReset}
-                                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                                        className="px-3 py-1 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                                     >
                                         Reset
                                     </button>

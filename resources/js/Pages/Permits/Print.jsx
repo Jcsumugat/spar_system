@@ -1,11 +1,58 @@
-import { Head } from "@inertiajs/react";
-import { useEffect } from "react";
+import { Head, router } from "@inertiajs/react";
+import { useEffect, useState } from "react";
 
 export default function Print({ permit }) {
+    const [printLogged, setPrintLogged] = useState(false);
+
     useEffect(() => {
         // Auto-print when page loads
         window.print();
     }, []);
+
+    useEffect(() => {
+        // Log print after the print dialog is triggered
+        const handleAfterPrint = () => {
+            if (!printLogged) {
+                logPrint();
+                setPrintLogged(true);
+            }
+        };
+
+        const handleBeforePrint = () => {
+            // Optional: You can add logic before printing
+            console.log("Preparing to print...");
+        };
+
+        window.addEventListener("beforeprint", handleBeforePrint);
+        window.addEventListener("afterprint", handleAfterPrint);
+
+        return () => {
+            window.removeEventListener("beforeprint", handleBeforePrint);
+            window.removeEventListener("afterprint", handleAfterPrint);
+        };
+    }, [printLogged, permit.id]);
+
+    const logPrint = () => {
+        router.post(
+            route("permits.log-print", permit.id),
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+                only: [], // Don't reload any data
+                onSuccess: () => {
+                    console.log("Print logged successfully");
+                },
+                onError: (errors) => {
+                    console.error("Failed to log print:", errors);
+                },
+            }
+        );
+    };
+
+    const handleManualPrint = () => {
+        window.print();
+    };
 
     const formatDate = (date) => {
         return new Date(date)
@@ -139,7 +186,7 @@ export default function Print({ permit }) {
                 }}
             >
                 <button
-                    onClick={() => window.print()}
+                    onClick={handleManualPrint}
                     style={{
                         padding: "10px 30px",
                         backgroundColor: "#6366f1",

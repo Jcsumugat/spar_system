@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\NotificationHelper;
 
 class LabReportController extends Controller
 {
@@ -72,6 +73,9 @@ class LabReportController extends Controller
             $receiptPath = $request->file('receipt_photo')->store('lab-reports/receipts', 'public');
             $dtiPath = $request->file('dti_photo')->store('lab-reports/dti', 'public');
 
+            // Get business info for notification
+            $business = Business::findOrFail($validated['business_id']);
+
             // Create lab report (results will be set by inspector)
             $labReport = LabReport::create([
                 'business_id' => $validated['business_id'],
@@ -98,14 +102,23 @@ class LabReportController extends Controller
                 'general_remarks' => $validated['general_remarks'] ?? null,
 
                 'status' => 'pending',
-                'overall_result' => null, // Will be determined by inspector
+                'overall_result' => null,
                 'submitted_at' => now(),
             ]);
 
-            // Create inspection only for new applications
             $inspection = null;
             if ($validated['application_type'] === 'new') {
                 $inspection = $this->createInspectionForLabReport($labReport);
+            }
+
+            $inspectors = User::where('role', 'admin')->get();
+
+            foreach ($inspectors as $inspector) {
+                NotificationHelper::labReportSubmitted(
+                    $inspector->id,
+                    $business,
+                    $labReport
+                );
             }
 
             DB::commit();
@@ -149,12 +162,8 @@ class LabReportController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for editing the specified lab report.
-     */
     public function edit(LabReport $labReport)
     {
-        // Only allow editing if pending or rejected
         if (!in_array($labReport->status, ['pending', 'rejected'])) {
             return redirect()->route('lab-reports.show', $labReport)
                 ->with('error', 'This lab report cannot be edited.');
@@ -163,15 +172,26 @@ class LabReportController extends Controller
         $businesses = Business::active()
             ->get(['id', 'business_name', 'owner_name', 'permit_status']);
 
+        // Add accessor URLs
+        $labReport->fecalysis_photo_url = $labReport->fecalysis_photo
+            ? Storage::url($labReport->fecalysis_photo)
+            : null;
+        $labReport->xray_sputum_photo_url = $labReport->xray_sputum_photo
+            ? Storage::url($labReport->xray_sputum_photo)
+            : null;
+        $labReport->receipt_photo_url = $labReport->receipt_photo
+            ? Storage::url($labReport->receipt_photo)
+            : null;
+        $labReport->dti_photo_url = $labReport->dti_photo
+            ? Storage::url($labReport->dti_photo)
+            : null;
+
         return Inertia::render('LabReports/Edit', [
             'labReport' => $labReport,
             'businesses' => $businesses
         ]);
     }
 
-    /**
-     * Update the specified lab report in storage.
-     */
     public function update(Request $request, LabReport $labReport)
     {
         // Only allow updates if not approved
@@ -198,39 +218,58 @@ class LabReportController extends Controller
             'general_remarks' => 'nullable|string|max:1000',
         ]);
 
-        // Handle file uploads if new files provided
+        // Prepare update data (only include fields that should be updated)
+        $updateData = [
+            'business_id' => $validated['business_id'],
+            'application_type' => $validated['application_type'],
+            'fecalysis_remarks' => $validated['fecalysis_remarks'],
+            'xray_sputum_remarks' => $validated['xray_sputum_remarks'],
+            'receipt_remarks' => $validated['receipt_remarks'],
+            'dti_remarks' => $validated['dti_remarks'],
+            'general_remarks' => $validated['general_remarks'],
+
+            // Reset evaluation fields when edited
+            'status' => 'pending',
+            'overall_result' => null,
+            'fecalysis_result' => null,
+            'xray_sputum_result' => null,
+            'receipt_result' => null,
+            'dti_result' => null,
+            'inspected_by' => null,
+            'inspected_at' => null,
+            'inspector_remarks' => null,
+        ];
+
+        // Handle file uploads ONLY if new files are provided
         if ($request->hasFile('fecalysis_photo')) {
-            Storage::disk('public')->delete($labReport->fecalysis_photo);
-            $validated['fecalysis_photo'] = $request->file('fecalysis_photo')->store('lab-reports/fecalysis', 'public');
+            if ($labReport->fecalysis_photo) {
+                Storage::disk('public')->delete($labReport->fecalysis_photo);
+            }
+            $updateData['fecalysis_photo'] = $request->file('fecalysis_photo')->store('lab-reports/fecalysis', 'public');
         }
 
         if ($request->hasFile('xray_sputum_photo')) {
-            Storage::disk('public')->delete($labReport->xray_sputum_photo);
-            $validated['xray_sputum_photo'] = $request->file('xray_sputum_photo')->store('lab-reports/xray-sputum', 'public');
+            if ($labReport->xray_sputum_photo) {
+                Storage::disk('public')->delete($labReport->xray_sputum_photo);
+            }
+            $updateData['xray_sputum_photo'] = $request->file('xray_sputum_photo')->store('lab-reports/xray-sputum', 'public');
         }
 
         if ($request->hasFile('receipt_photo')) {
-            Storage::disk('public')->delete($labReport->receipt_photo);
-            $validated['receipt_photo'] = $request->file('receipt_photo')->store('lab-reports/receipts', 'public');
+            if ($labReport->receipt_photo) {
+                Storage::disk('public')->delete($labReport->receipt_photo);
+            }
+            $updateData['receipt_photo'] = $request->file('receipt_photo')->store('lab-reports/receipts', 'public');
         }
 
         if ($request->hasFile('dti_photo')) {
-            Storage::disk('public')->delete($labReport->dti_photo);
-            $validated['dti_photo'] = $request->file('dti_photo')->store('lab-reports/dti', 'public');
+            if ($labReport->dti_photo) {
+                Storage::disk('public')->delete($labReport->dti_photo);
+            }
+            $updateData['dti_photo'] = $request->file('dti_photo')->store('lab-reports/dti', 'public');
         }
 
-        // Reset evaluation fields
-        $validated['status'] = 'pending';
-        $validated['overall_result'] = null;
-        $validated['fecalysis_result'] = null;
-        $validated['xray_sputum_result'] = null;
-        $validated['receipt_result'] = null;
-        $validated['dti_result'] = null;
-        $validated['inspected_by'] = null;
-        $validated['inspected_at'] = null;
-        $validated['inspector_remarks'] = null;
-
-        $labReport->update($validated);
+        $labReport->update($updateData);
 
         return redirect()->route('lab-reports.index')
             ->with('success', 'Lab report updated successfully.');

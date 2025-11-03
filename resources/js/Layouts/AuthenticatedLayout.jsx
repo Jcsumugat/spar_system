@@ -131,6 +131,10 @@ export default function AuthenticatedLayout({ user, children }) {
                 return <ClipboardCheck className="w-5 h-5 text-blue-600" />;
             case "renewal_pending":
                 return <RefreshCw className="w-5 h-5 text-orange-600" />;
+            case "lab_report_submitted":
+                return <FlaskConical className="w-5 h-5 text-purple-600" />;
+            case "business_registered":
+                return <Building2 className="w-5 h-5 text-green-600" />;
             default:
                 return <Bell className="w-5 h-5 text-gray-600" />;
         }
@@ -399,11 +403,102 @@ export default function AuthenticatedLayout({ user, children }) {
                                                                 notification.id
                                                             }
                                                             className="px-4 py-3 hover:bg-gray-50 border-b border-gray-100 cursor-pointer transition-colors"
-                                                            onClick={() =>
-                                                                markAsRead(
-                                                                    notification.id
-                                                                )
-                                                            }
+                                                            onClick={() => {
+                                                                // Close dropdown
+                                                                setNotificationDropdownOpen(
+                                                                    false
+                                                                );
+
+                                                                // Mark as read if unread
+                                                                if (
+                                                                    !notification.read_at
+                                                                ) {
+                                                                    markAsRead(
+                                                                        notification.id
+                                                                    );
+                                                                }
+
+                                                                // Navigate based on notification type
+                                                                if (
+                                                                    notification.data
+                                                                ) {
+                                                                    if (
+                                                                        notification
+                                                                            .data
+                                                                            .business_id &&
+                                                                        notification.type ===
+                                                                            "business_registered"
+                                                                    ) {
+                                                                        router.visit(
+                                                                            route(
+                                                                                "businesses.show",
+                                                                                notification
+                                                                                    .data
+                                                                                    .business_id
+                                                                            )
+                                                                        );
+                                                                    } else if (
+                                                                        notification
+                                                                            .data
+                                                                            .lab_report_id &&
+                                                                        notification.type ===
+                                                                            "lab_report_submitted"
+                                                                    ) {
+                                                                        router.visit(
+                                                                            route(
+                                                                                "lab-reports.show",
+                                                                                notification
+                                                                                    .data
+                                                                                    .lab_report_id
+                                                                            )
+                                                                        );
+                                                                    } else if (
+                                                                        notification
+                                                                            .data
+                                                                            .inspection_id &&
+                                                                        notification.type ===
+                                                                            "inspection_due"
+                                                                    ) {
+                                                                        router.visit(
+                                                                            route(
+                                                                                "inspections.show",
+                                                                                notification
+                                                                                    .data
+                                                                                    .inspection_id
+                                                                            )
+                                                                        );
+                                                                    } else if (
+                                                                        notification
+                                                                            .data
+                                                                            .permit_id &&
+                                                                        notification.type ===
+                                                                            "permit_expiring"
+                                                                    ) {
+                                                                        router.visit(
+                                                                            route(
+                                                                                "permits.show",
+                                                                                notification
+                                                                                    .data
+                                                                                    .permit_id
+                                                                            )
+                                                                        );
+                                                                    } else if (
+                                                                        notification
+                                                                            .data
+                                                                            .business_id
+                                                                    ) {
+                                                                        // Fallback to business page if no specific route
+                                                                        router.visit(
+                                                                            route(
+                                                                                "businesses.show",
+                                                                                notification
+                                                                                    .data
+                                                                                    .business_id
+                                                                            )
+                                                                        );
+                                                                    }
+                                                                }
+                                                            }}
                                                         >
                                                             <div className="flex gap-3">
                                                                 <div className="flex-shrink-0 mt-1">

@@ -31,10 +31,18 @@ export default function Edit({ auth, labReport, businesses }) {
     });
 
     const [previews, setPreviews] = useState({
-        fecalysis_photo: labReport.fecalysis_photo_url,
-        xray_sputum_photo: labReport.xray_sputum_photo_url,
-        receipt_photo: labReport.receipt_photo_url,
-        dti_photo: labReport.dti_photo_url,
+        fecalysis_photo: labReport.fecalysis_photo_url
+            ? `/storage/${labReport.fecalysis_photo}`
+            : null,
+        xray_sputum_photo: labReport.xray_sputum_photo_url
+            ? `/storage/${labReport.xray_sputum_photo}`
+            : null,
+        receipt_photo: labReport.receipt_photo_url
+            ? `/storage/${labReport.receipt_photo}`
+            : null,
+        dti_photo: labReport.dti_photo_url
+            ? `/storage/${labReport.dti_photo}`
+            : null,
     });
 
     const handleFileChange = (e, field) => {
@@ -232,62 +240,6 @@ export default function Edit({ auth, labReport, businesses }) {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Result{" "}
-                                        <span className="text-red-500">*</span>
-                                    </label>
-                                    <div className="flex gap-4">
-                                        <label className="flex items-center">
-                                            <input
-                                                type="radio"
-                                                value="pass"
-                                                checked={
-                                                    data.fecalysis_result ===
-                                                    "pass"
-                                                }
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "fecalysis_result",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="mr-2"
-                                            />
-                                            <CheckCircle className="w-5 h-5 text-green-600 mr-1" />
-                                            <span className="text-sm font-medium text-gray-700">
-                                                Pass
-                                            </span>
-                                        </label>
-                                        <label className="flex items-center">
-                                            <input
-                                                type="radio"
-                                                value="fail"
-                                                checked={
-                                                    data.fecalysis_result ===
-                                                    "fail"
-                                                }
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "fecalysis_result",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="mr-2"
-                                            />
-                                            <XCircle className="w-5 h-5 text-red-600 mr-1" />
-                                            <span className="text-sm font-medium text-gray-700">
-                                                Fail
-                                            </span>
-                                        </label>
-                                    </div>
-                                    {errors.fecalysis_result && (
-                                        <p className="mt-1 text-sm text-red-600">
-                                            {errors.fecalysis_result}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Remarks
                                     </label>
                                     <textarea
@@ -368,62 +320,6 @@ export default function Edit({ auth, labReport, businesses }) {
                                     {errors.xray_sputum_photo && (
                                         <p className="mt-1 text-sm text-red-600">
                                             {errors.xray_sputum_photo}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Result{" "}
-                                        <span className="text-red-500">*</span>
-                                    </label>
-                                    <div className="flex gap-4">
-                                        <label className="flex items-center">
-                                            <input
-                                                type="radio"
-                                                value="pass"
-                                                checked={
-                                                    data.xray_sputum_result ===
-                                                    "pass"
-                                                }
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "xray_sputum_result",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="mr-2"
-                                            />
-                                            <CheckCircle className="w-5 h-5 text-green-600 mr-1" />
-                                            <span className="text-sm font-medium text-gray-700">
-                                                Pass
-                                            </span>
-                                        </label>
-                                        <label className="flex items-center">
-                                            <input
-                                                type="radio"
-                                                value="fail"
-                                                checked={
-                                                    data.xray_sputum_result ===
-                                                    "fail"
-                                                }
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "xray_sputum_result",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="mr-2"
-                                            />
-                                            <XCircle className="w-5 h-5 text-red-600 mr-1" />
-                                            <span className="text-sm font-medium text-gray-700">
-                                                Fail
-                                            </span>
-                                        </label>
-                                    </div>
-                                    {errors.xray_sputum_result && (
-                                        <p className="mt-1 text-sm text-red-600">
-                                            {errors.xray_sputum_result}
                                         </p>
                                     )}
                                 </div>
@@ -516,62 +412,6 @@ export default function Edit({ auth, labReport, businesses }) {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Result{" "}
-                                        <span className="text-red-500">*</span>
-                                    </label>
-                                    <div className="flex gap-4">
-                                        <label className="flex items-center">
-                                            <input
-                                                type="radio"
-                                                value="pass"
-                                                checked={
-                                                    data.receipt_result ===
-                                                    "pass"
-                                                }
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "receipt_result",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="mr-2"
-                                            />
-                                            <CheckCircle className="w-5 h-5 text-green-600 mr-1" />
-                                            <span className="text-sm font-medium text-gray-700">
-                                                Pass
-                                            </span>
-                                        </label>
-                                        <label className="flex items-center">
-                                            <input
-                                                type="radio"
-                                                value="fail"
-                                                checked={
-                                                    data.receipt_result ===
-                                                    "fail"
-                                                }
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "receipt_result",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="mr-2"
-                                            />
-                                            <XCircle className="w-5 h-5 text-red-600 mr-1" />
-                                            <span className="text-sm font-medium text-gray-700">
-                                                Fail
-                                            </span>
-                                        </label>
-                                    </div>
-                                    {errors.receipt_result && (
-                                        <p className="mt-1 text-sm text-red-600">
-                                            {errors.receipt_result}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Remarks
                                     </label>
                                     <textarea
@@ -652,60 +492,6 @@ export default function Edit({ auth, labReport, businesses }) {
                                     {errors.dti_photo && (
                                         <p className="mt-1 text-sm text-red-600">
                                             {errors.dti_photo}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Result{" "}
-                                        <span className="text-red-500">*</span>
-                                    </label>
-                                    <div className="flex gap-4">
-                                        <label className="flex items-center">
-                                            <input
-                                                type="radio"
-                                                value="pass"
-                                                checked={
-                                                    data.dti_result === "pass"
-                                                }
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "dti_result",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="mr-2"
-                                            />
-                                            <CheckCircle className="w-5 h-5 text-green-600 mr-1" />
-                                            <span className="text-sm font-medium text-gray-700">
-                                                Pass
-                                            </span>
-                                        </label>
-                                        <label className="flex items-center">
-                                            <input
-                                                type="radio"
-                                                value="fail"
-                                                checked={
-                                                    data.dti_result === "fail"
-                                                }
-                                                onChange={(e) =>
-                                                    setData(
-                                                        "dti_result",
-                                                        e.target.value
-                                                    )
-                                                }
-                                                className="mr-2"
-                                            />
-                                            <XCircle className="w-5 h-5 text-red-600 mr-1" />
-                                            <span className="text-sm font-medium text-gray-700">
-                                                Fail
-                                            </span>
-                                        </label>
-                                    </div>
-                                    {errors.dti_result && (
-                                        <p className="mt-1 text-sm text-red-600">
-                                            {errors.dti_result}
                                         </p>
                                     )}
                                 </div>

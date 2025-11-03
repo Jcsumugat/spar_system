@@ -6,7 +6,10 @@ use App\Models\Business;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Helpers\NotificationHelper;
+use App\Models\User;
 
 class BusinessController extends Controller
 {
@@ -63,16 +66,36 @@ class BusinessController extends Controller
             'number_of_employees' => 'nullable|integer|min:0',
         ]);
 
-        $business = Business::create($validated);
+        DB::beginTransaction();
+        try {
+            $business = Business::create($validated);
 
-        ActivityLog::logActivity(
-            'created',
-            $business,
-            'Created business ' . $business->business_name
-        );
+            ActivityLog::logActivity(
+                'created',
+                $business,
+                'Created business ' . $business->business_name
+            );
 
-        return redirect()->route('businesses.show', $business)
-            ->with('success', 'Business registered successfully.');
+            // Send notifications to all Lab Inspectors (admin role)
+            $inspectors = User::where('role', 'admin')->get();
+
+            foreach ($inspectors as $inspector) {
+                NotificationHelper::businessRegistered(
+                    $inspector->id,
+                    $business
+                );
+            }
+
+            DB::commit();
+
+            return redirect()->route('businesses.show', $business)
+                ->with('success', 'Business registered successfully. Lab Inspectors have been notified.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return back()->withErrors(['error' => 'Failed to register business: ' . $e->getMessage()])
+                ->withInput();
+        }
     }
 
     public function show(Business $business)

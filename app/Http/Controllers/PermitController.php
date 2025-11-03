@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SanitaryPermit;
 use App\Models\Business;
 use App\Models\ActivityLog;
+use App\Models\PermitPrintLog;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -13,7 +14,8 @@ class PermitController extends Controller
 {
     public function index(Request $request)
     {
-        $query = SanitaryPermit::with(['business', 'issuedBy', 'approvedBy']);
+        $query = SanitaryPermit::with(['business', 'issuedBy', 'approvedBy'])
+            ->withCount('printLogs'); // Add print count
 
         // Filter by permit type
         if ($request->has('permit_type') && $request->permit_type !== 'all') {
@@ -89,88 +91,17 @@ class PermitController extends Controller
             'documents.uploader'
         ]);
 
+        // Get print count for this permit
+        $printCount = PermitPrintLog::where('permit_id', $permit->id)->count();
+
+        // Get print count for this business
+        $businessPrintCount = PermitPrintLog::getBusinessPrintCount($permit->business_id);
+
         return Inertia::render('Permits/Show', [
             'permit' => $permit,
+            'printCount' => $printCount,
+            'businessPrintCount' => $businessPrintCount,
         ]);
-    }
-
-    public function edit(SanitaryPermit $permit)
-    {
-        $businesses = Business::active()->get(['id', 'business_name']);
-
-        return Inertia::render('Permits/Edit', [
-            'permit' => $permit,
-            'businesses' => $businesses,
-        ]);
-    }
-
-    public function update(Request $request, SanitaryPermit $permit)
-    {
-        $validated = $request->validate([
-            'business_id' => 'required|exists:businesses,id',
-            'permit_type' => 'required|in:New,Renewal',
-            'issue_date' => 'required|date',
-            'expiry_date' => 'required|date|after:issue_date',
-            'status' => 'required|in:Active,Expiring Soon,Expired,Suspended,Revoked,Pending',
-            'remarks' => 'nullable|string',
-        ]);
-
-        $oldData = $permit->toArray();
-        $permit->update($validated);
-
-        ActivityLog::logActivity(
-            'updated',
-            $permit,
-            'Updated sanitary permit ' . $permit->permit_number,
-            ['old' => $oldData, 'new' => $validated]
-        );
-
-        return redirect()->route('permits.show', $permit)
-            ->with('success', 'Permit updated successfully.');
-    }
-
-    public function approve(SanitaryPermit $permit)
-    {
-        if (!auth()->user()->canApprovePermits()) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $permit->update([
-            'status' => 'Active',
-            'approved_by' => auth()->id(),
-        ]);
-
-        ActivityLog::logActivity(
-            'approved',
-            $permit,
-            'Approved sanitary permit ' . $permit->permit_number
-        );
-
-        return back()->with('success', 'Permit approved successfully.');
-    }
-
-    public function reject(Request $request, SanitaryPermit $permit)
-    {
-        if (!auth()->user()->canApprovePermits()) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $validated = $request->validate([
-            'remarks' => 'required|string|max:500',
-        ]);
-
-        $permit->update([
-            'status' => 'Revoked',
-            'remarks' => $validated['remarks'],
-        ]);
-
-        ActivityLog::logActivity(
-            'rejected',
-            $permit,
-            'Rejected sanitary permit ' . $permit->permit_number
-        );
-
-        return back()->with('success', 'Permit rejected.');
     }
 
     public function destroy(SanitaryPermit $permit)
@@ -193,6 +124,63 @@ class PermitController extends Controller
 
         return Inertia::render('Permits/Print', [
             'permit' => $permit,
+        ]);
+    }
+
+    /**
+     * Log successful print
+     */
+    public function logPrint(Request $request, SanitaryPermit $permit)
+    {
+        PermitPrintLog::create([
+            'permit_id' => $permit->id,
+            'business_id' => $permit->business_id,
+            'printed_by' => auth()->id(),
+            'printed_at' => now(),
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
+        ActivityLog::logActivity(
+            'printed',
+            $permit,
+            'Printed sanitary permit ' . $permit->permit_number
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Print logged successfully',
+        ]);
+    }
+
+    /**
+     * Get print statistics for a business
+     */
+    public function getPrintStatistics(Request $request, $businessId)
+    {
+        $business = Business::findOrFail($businessId);
+
+        $totalPrints = PermitPrintLog::getBusinessPrintCount($businessId);
+
+        // Prints this month
+        $monthlyPrints = PermitPrintLog::getBusinessPrintCountByDateRange(
+            $businessId,
+            Carbon::now()->startOfMonth(),
+            Carbon::now()->endOfMonth()
+        );
+
+        // Prints by staff
+        $printsByStaff = PermitPrintLog::where('business_id', $businessId)
+            ->with('printedBy:id,name')
+            ->selectRaw('printed_by, COUNT(*) as print_count')
+            ->groupBy('printed_by')
+            ->get();
+
+        return response()->json([
+            'business' => $business,
+            'total_prints' => $totalPrints,
+            'monthly_prints' => $monthlyPrints,
+            'prints_by_staff' => $printsByStaff,
         ]);
     }
 }

@@ -37,14 +37,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     */
     Route::prefix('businesses')->name('businesses.')->group(function () {
         Route::get('/', [BusinessController::class, 'index'])->name('index');
+        Route::get('/create', [BusinessController::class, 'create'])->name('create');
+        Route::post('/', [BusinessController::class, 'store'])->name('store');
+        Route::get('/{business}/edit', [BusinessController::class, 'edit'])->name('edit');
+        Route::put('/{business}', [BusinessController::class, 'update'])->name('update');
+        Route::delete('/{business}', [BusinessController::class, 'destroy'])->name('destroy');
 
-        Route::middleware('admin')->group(function () {
-            Route::get('/create', [BusinessController::class, 'create'])->name('create');
-            Route::post('/', [BusinessController::class, 'store'])->name('store');
-            Route::get('/{business}/edit', [BusinessController::class, 'edit'])->name('edit');
-            Route::put('/{business}', [BusinessController::class, 'update'])->name('update');
-            Route::delete('/{business}', [BusinessController::class, 'destroy'])->name('destroy');
-        });
 
         Route::get('/{business}', [BusinessController::class, 'show'])->name('show');
     });
@@ -59,42 +57,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [LabReportController::class, 'index'])->name('index');
         Route::get('/inspection/queue', [LabReportController::class, 'inspectionQueue'])->name('inspection.queue');
 
-        // Admin-only routes
-        Route::middleware('admin')->group(function () {
-            Route::get('/create', [LabReportController::class, 'create'])->name('create');
-            Route::post('/', [LabReportController::class, 'store'])->name('store');
-            Route::get('/{labReport}/edit', [LabReportController::class, 'edit'])->name('edit');
-            Route::put('/{labReport}', [LabReportController::class, 'update'])->name('update');
-            Route::delete('/{labReport}', [LabReportController::class, 'destroy'])->name('destroy');
-            Route::post('/{labReport}/approve', [LabReportController::class, 'approve'])->name('approve');
-            Route::post('/{labReport}/reject', [LabReportController::class, 'reject'])->name('reject');
-        });
+        Route::get('/create', [LabReportController::class, 'create'])->name('create');
+        Route::post('/', [LabReportController::class, 'store'])->name('store');
+        Route::get('/{labReport}/edit', [LabReportController::class, 'edit'])->name('edit');
+        Route::put('/{labReport}', [LabReportController::class, 'update'])->name('update');
+        Route::delete('/{labReport}', [LabReportController::class, 'destroy'])->name('destroy');
+        Route::post('/{labReport}/approve', [LabReportController::class, 'approve'])->name('approve');
 
-        // Must be LAST - wildcard route
         Route::get('/{labReport}', [LabReportController::class, 'show'])->name('show');
     });
 
     /*
-    |--------------------------------------------------------------------------
-    | Permit Management
-    |--------------------------------------------------------------------------
-    */
+|--------------------------------------------------------------------------
+| Permit Management
+|--------------------------------------------------------------------------
+*/
     Route::prefix('permits')->name('permits.')->group(function () {
-        // Public routes (both admin and staff can access)
+
         Route::get('/', [PermitController::class, 'index'])->name('index');
+        Route::get('/create', [PermitController::class, 'create'])->name('create');
+        Route::post('/', [PermitController::class, 'store'])->name('store');
+        Route::get('/businesses/{business}/print-statistics', [PermitController::class, 'getPrintStatistics'])
+            ->name('businesses.print-statistics');
         Route::get('/{permit}', [PermitController::class, 'show'])->name('show');
         Route::get('/{permit}/print', [PermitController::class, 'print'])->name('print');
-
-        // Admin-only routes
-        Route::middleware('admin')->group(function () {
-            Route::get('/create', [PermitController::class, 'create'])->name('create');
-            Route::post('/', [PermitController::class, 'store'])->name('store');
-            Route::get('/{permit}/edit', [PermitController::class, 'edit'])->name('edit');
-            Route::put('/{permit}', [PermitController::class, 'update'])->name('update');
-            Route::delete('/{permit}', [PermitController::class, 'destroy'])->name('destroy');
-            Route::post('/{permit}/approve', [PermitController::class, 'approve'])->name('approve');
-            Route::post('/{permit}/reject', [PermitController::class, 'reject'])->name('reject');
-        });
+        Route::post('/{permit}/log-print', [PermitController::class, 'logPrint'])->name('log-print');
+        Route::delete('/{permit}', [PermitController::class, 'destroy'])->name('destroy');
     });
 
     /*

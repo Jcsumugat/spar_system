@@ -58,4 +58,36 @@ class NotificationHelper
             ]
         );
     }
+
+    public static function labReportSubmitted($userId, $business, $labReport)
+    {
+        $applicationType = ucfirst($labReport->application_type);
+
+        return self::create(
+            $userId,
+            'lab_report_submitted',
+            'New Lab Report Submitted',
+            "{$applicationType} application lab report from {$business->business_name} requires review",
+            [
+                'business_id' => $business->id,
+                'lab_report_id' => $labReport->id,
+                'application_type' => $labReport->application_type,
+            ]
+        );
+    }
+
+    public static function businessRegistered($userId, $business)
+    {
+        return self::create(
+            $userId,
+            'business_registered',
+            'New Business Registered',
+            "New business '{$business->business_name}' owned by {$business->owner_name} has been registered and requires inspection",
+            [
+                'business_id' => $business->id,
+                'business_type' => $business->business_type,
+                'barangay' => $business->barangay,
+            ]
+        );
+    }
 }

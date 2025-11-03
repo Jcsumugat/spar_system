@@ -286,6 +286,9 @@ export default function Index({ auth, permits, filters }) {
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Status
                                         </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Prints
+                                        </th>
                                         <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Actions
                                         </th>
@@ -407,6 +410,13 @@ export default function Index({ auth, permits, filters }) {
                                                         {getStatusBadge(
                                                             permit.status
                                                         )}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        <div className="flex items-center gap-1">
+                                                            <Download className="w-3 h-3 text-gray-400" />
+                                                            {permit.print_logs_count ||
+                                                                0}
+                                                        </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                         <div className="flex flex-col items-center gap-2">

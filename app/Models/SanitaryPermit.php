@@ -157,6 +157,11 @@ class SanitaryPermit extends Model
         return $this->belongsTo(User::class, 'approved_by');
     }
 
+    public function printLogs()
+    {
+        return $this->hasMany(PermitPrintLog::class, 'permit_id');
+    }
+
     // Boot method for automatic status updates
     protected static function boot()
     {
