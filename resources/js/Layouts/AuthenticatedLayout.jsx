@@ -33,7 +33,11 @@ export default function AuthenticatedLayout({ user, children }) {
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const { url } = usePage();
 
-    const navigation = [
+    // Check if user is Inspector (Admin role)
+    const isInspector = user.role === "Admin";
+
+    // Base navigation items (available to all users)
+    const baseNavigation = [
         {
             name: "Dashboard",
             href: route("dashboard"),
@@ -52,6 +56,10 @@ export default function AuthenticatedLayout({ user, children }) {
             icon: FlaskConical,
             current: url.startsWith("/lab-reports"),
         },
+    ];
+
+    // Inspector-only navigation items
+    const inspectorNavigation = [
         {
             name: "Permits",
             href: route("permits.index"),
@@ -65,6 +73,11 @@ export default function AuthenticatedLayout({ user, children }) {
             current: url.startsWith("/inspections"),
         },
     ];
+
+    // Combine navigation based on user role
+    const navigation = isInspector
+        ? [...baseNavigation, ...inspectorNavigation]
+        : baseNavigation;
 
     // Fetch notifications
     const fetchNotifications = async () => {
@@ -232,7 +245,7 @@ export default function AuthenticatedLayout({ user, children }) {
                                     {user.name}
                                 </p>
                                 <p className="text-xs text-gray-500">
-                                    {user.role}
+                                    {user.position || user.role}
                                 </p>
                             </div>
                         </div>
@@ -260,7 +273,7 @@ export default function AuthenticatedLayout({ user, children }) {
                                     : "px-4"
                             } py-3 text-sm font-medium transition-colors ${
                                 item.current
-                                    ? "bg-blue-100 text-blue-700 border-l-4 border-gray-500"
+                                    ? "bg-blue-100 text-blue-700 border-l-4 border-blue-700"
                                     : "text-gray-700 hover:bg-gray-100 hover:text-blue-700"
                             }`}
                             title={sidebarCollapsed ? item.name : ""}
@@ -352,7 +365,7 @@ export default function AuthenticatedLayout({ user, children }) {
                     <div className="flex flex-1 justify-between px-4 sm:px-6 lg:px-8">
                         <div className="flex flex-1 items-center">
                             <h1 className="text-xl font-semibold text-gray-900">
-                                Sanitary Permit Certification and Renewal System
+                                Sanitary Permit Certification System
                             </h1>
                         </div>
 
@@ -422,7 +435,111 @@ export default function AuthenticatedLayout({ user, children }) {
                                                                 if (
                                                                     notification.data
                                                                 ) {
+                                                                    // Handle lab report submitted - check for inspection_id first
                                                                     if (
+                                                                        notification.type ===
+                                                                        "lab_report_submitted"
+                                                                    ) {
+                                                                        if (
+                                                                            notification
+                                                                                .data
+                                                                                .inspection_id
+                                                                        ) {
+                                                                            // Redirect to inspection page (for inspectors)
+                                                                            router.visit(
+                                                                                route(
+                                                                                    "inspections.show",
+                                                                                    notification
+                                                                                        .data
+                                                                                        .inspection_id
+                                                                                )
+                                                                            );
+                                                                        } else if (
+                                                                            notification
+                                                                                .data
+                                                                                .lab_report_id
+                                                                        ) {
+                                                                            // Redirect to lab report page (for lab staff)
+                                                                            router.visit(
+                                                                                route(
+                                                                                    "lab-reports.show",
+                                                                                    notification
+                                                                                        .data
+                                                                                        .lab_report_id
+                                                                                )
+                                                                            );
+                                                                        }
+                                                                    }
+                                                                    // Handle inspection progress saved
+                                                                    else if (
+                                                                        notification.type ===
+                                                                            "inspection_progress_saved" &&
+                                                                        notification
+                                                                            .data
+                                                                            .inspection_id
+                                                                    ) {
+                                                                        router.visit(
+                                                                            route(
+                                                                                "inspections.show",
+                                                                                notification
+                                                                                    .data
+                                                                                    .inspection_id
+                                                                            )
+                                                                        );
+                                                                    }
+                                                                    // Handle inspection approved
+                                                                    else if (
+                                                                        notification.type ===
+                                                                            "inspection_approved" &&
+                                                                        notification
+                                                                            .data
+                                                                            .inspection_id
+                                                                    ) {
+                                                                        router.visit(
+                                                                            route(
+                                                                                "inspections.show",
+                                                                                notification
+                                                                                    .data
+                                                                                    .inspection_id
+                                                                            )
+                                                                        );
+                                                                    }
+                                                                    // Handle inspection denied
+                                                                    else if (
+                                                                        notification.type ===
+                                                                            "inspection_denied" &&
+                                                                        notification
+                                                                            .data
+                                                                            .inspection_id
+                                                                    ) {
+                                                                        router.visit(
+                                                                            route(
+                                                                                "inspections.show",
+                                                                                notification
+                                                                                    .data
+                                                                                    .inspection_id
+                                                                            )
+                                                                        );
+                                                                    }
+                                                                    // Handle lab report reviewed
+                                                                    else if (
+                                                                        notification.type ===
+                                                                            "lab_report_reviewed" &&
+                                                                        notification
+                                                                            .data
+                                                                            .lab_report_id
+                                                                    ) {
+                                                                        router.visit(
+                                                                            route(
+                                                                                "lab-reports.show",
+                                                                                notification
+                                                                                    .data
+                                                                                    .lab_report_id
+                                                                            )
+                                                                        );
+                                                                    }
+                                                                    // Handle business registered
+                                                                    else if (
                                                                         notification
                                                                             .data
                                                                             .business_id &&
@@ -437,22 +554,9 @@ export default function AuthenticatedLayout({ user, children }) {
                                                                                     .business_id
                                                                             )
                                                                         );
-                                                                    } else if (
-                                                                        notification
-                                                                            .data
-                                                                            .lab_report_id &&
-                                                                        notification.type ===
-                                                                            "lab_report_submitted"
-                                                                    ) {
-                                                                        router.visit(
-                                                                            route(
-                                                                                "lab-reports.show",
-                                                                                notification
-                                                                                    .data
-                                                                                    .lab_report_id
-                                                                            )
-                                                                        );
-                                                                    } else if (
+                                                                    }
+                                                                    // Handle inspection due
+                                                                    else if (
                                                                         notification
                                                                             .data
                                                                             .inspection_id &&
@@ -467,7 +571,9 @@ export default function AuthenticatedLayout({ user, children }) {
                                                                                     .inspection_id
                                                                             )
                                                                         );
-                                                                    } else if (
+                                                                    }
+                                                                    // Handle permit expiring
+                                                                    else if (
                                                                         notification
                                                                             .data
                                                                             .permit_id &&
@@ -482,12 +588,13 @@ export default function AuthenticatedLayout({ user, children }) {
                                                                                     .permit_id
                                                                             )
                                                                         );
-                                                                    } else if (
+                                                                    }
+                                                                    // Fallback to business page if no specific route
+                                                                    else if (
                                                                         notification
                                                                             .data
                                                                             .business_id
                                                                     ) {
-                                                                        // Fallback to business page if no specific route
                                                                         router.visit(
                                                                             route(
                                                                                 "businesses.show",

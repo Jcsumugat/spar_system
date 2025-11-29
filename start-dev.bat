@@ -16,8 +16,8 @@ REM Start MySQL
 start "XAMPP MySQL" cmd /c "xampp_start.exe mysql"
 timeout /t 3 /nobreak >nul
 
-REM Return to project directory
-cd /d "C:\path\to\your\laravel\project"
+REM === IMPORTANT: Change this to your actual project path ===
+cd /d "C:\Users\User\spar"
 
 REM === Start Laravel backend ===
 echo Starting Laravel server...

@@ -70,6 +70,14 @@ export default function Show({ auth, permit }) {
         return diffDays;
     };
 
+    const formatRoleName = (role) => {
+        const roleMap = {
+            Admin: "Lab Inspector",
+            Staff: "Lab Assistant",
+            "Sanitary Inspector": "Sanitary Inspector",
+        };
+        return roleMap[role] || role;
+    };
     const daysUntilExpiry = getDaysUntilExpiry(permit.expiry_date);
     console.log("Permit data:", permit);
     console.log("Issued by:", permit.issued_by);
@@ -288,7 +296,11 @@ export default function Show({ auth, permit }) {
                                         {permit.issued_by?.role && (
                                             <span className="text-sm font-normal text-gray-600">
                                                 {" "}
-                                                ({permit.issued_by.role})
+                                                (
+                                                {formatRoleName(
+                                                    permit.issued_by.role
+                                                )}
+                                                )
                                             </span>
                                         )}
                                     </p>
@@ -296,20 +308,27 @@ export default function Show({ auth, permit }) {
                             </div>
 
                             <div className="flex items-start gap-3">
-                                <User className="w-5 h-5 text-gray-400 mt-0.5" />
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500 mb-1">
-                                        Approved By
-                                    </p>
-                                    <p className="text-base font-semibold text-gray-900">
-                                        {permit.approved_by?.name || "Unknown"}
-                                        {permit.approved_by?.role && (
-                                            <span className="text-sm font-normal text-gray-600">
-                                                {" "}
-                                                ({permit.approved_by.role})
-                                            </span>
-                                        )}
-                                    </p>
+                                <div className="flex items-start gap-3">
+                                    <User className="w-5 h-5 text-gray-400 mt-0.5" />
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-500 mb-1">
+                                            Approved By
+                                        </p>
+                                        <p className="text-base font-semibold text-gray-900">
+                                            {permit.approved_by?.name ||
+                                                "Unknown"}
+                                            {permit.approved_by?.role && (
+                                                <span className="text-sm font-normal text-gray-600">
+                                                    {" "}
+                                                    (
+                                                    {formatRoleName(
+                                                        permit.approved_by.role
+                                                    )}
+                                                    )
+                                                </span>
+                                            )}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ProfileVerificationController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PermitController;
 use App\Http\Controllers\BusinessController;
@@ -10,31 +11,16 @@ use App\Http\Controllers\LabReportController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Guest Routes
-|--------------------------------------------------------------------------
-*/
 
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Authenticated Routes
-|--------------------------------------------------------------------------
-*/
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Business Management
-    |--------------------------------------------------------------------------
-    */
     Route::prefix('businesses')->name('businesses.')->group(function () {
         Route::get('/', [BusinessController::class, 'index'])->name('index');
         Route::get('/create', [BusinessController::class, 'create'])->name('create');
@@ -47,13 +33,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{business}', [BusinessController::class, 'show'])->name('show');
     });
 
-    /*
-    |--------------------------------------------------------------------------
-    | Lab Report Management
-    |--------------------------------------------------------------------------
-    */
     Route::prefix('lab-reports')->name('lab-reports.')->group(function () {
-        // Public routes (both admin and staff can access)
         Route::get('/', [LabReportController::class, 'index'])->name('index');
         Route::get('/inspection/queue', [LabReportController::class, 'inspectionQueue'])->name('inspection.queue');
 
@@ -67,11 +47,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{labReport}', [LabReportController::class, 'show'])->name('show');
     });
 
-    /*
-|--------------------------------------------------------------------------
-| Permit Management
-|--------------------------------------------------------------------------
-*/
     Route::prefix('permits')->name('permits.')->group(function () {
 
         Route::get('/', [PermitController::class, 'index'])->name('index');
@@ -85,17 +60,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{permit}', [PermitController::class, 'destroy'])->name('destroy');
     });
 
-    /*
-    |--------------------------------------------------------------------------
-    | Inspection Management
-    |--------------------------------------------------------------------------
-    */
     Route::prefix('inspections')->name('inspections.')->group(function () {
-        // Public routes (both admin and staff can access)
         Route::get('/', [InspectionController::class, 'index'])->name('index');
-        Route::get('/{inspection}', [InspectionController::class, 'show'])->name('show');
 
-        // Admin-only routes
         Route::middleware('admin')->group(function () {
             Route::get('/create', [InspectionController::class, 'create'])->name('create');
             Route::post('/', [InspectionController::class, 'store'])->name('store');
@@ -106,13 +73,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
             Route::post('/{inspection}/pass', [InspectionController::class, 'pass'])->name('pass');
             Route::post('/{inspection}/fail', [InspectionController::class, 'fail'])->name('fail');
         });
+
+        Route::get('/{inspection}', [InspectionController::class, 'show'])->name('show');
     });
 
-    /*
-    |--------------------------------------------------------------------------
-    | Notifications
-    |--------------------------------------------------------------------------
-    */
     Route::prefix('notifications')->name('notifications.')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('index');
         Route::get('/unread', [NotificationController::class, 'getUnread'])->name('unread');
@@ -121,32 +85,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{notification}', [NotificationController::class, 'destroy'])->name('destroy');
     });
 
-    /*
-    |--------------------------------------------------------------------------
-    | Settings/Configuration
-    |--------------------------------------------------------------------------
-    */
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/', [SettingsController::class, 'index'])->name('index');
         Route::put('/', [SettingsController::class, 'update'])->name('update');
     });
 
-    /*
-    |--------------------------------------------------------------------------
-    | User Profile
-    |--------------------------------------------------------------------------
-    */
+
     Route::prefix('profile')->name('profile.')->group(function () {
+        Route::post('/verify', [ProfileVerificationController::class, 'verify'])->name('verify');
+        Route::get('/check-verification', [ProfileVerificationController::class, 'checkVerification'])->name('check-verification');
         Route::get('/', [ProfileController::class, 'edit'])->name('edit');
         Route::patch('/', [ProfileController::class, 'update'])->name('update');
-        Route::delete('/', [ProfileController::class, 'destroy'])->name('destroy');
     });
 });
 
-/*
-|--------------------------------------------------------------------------
-| Authentication Routes
-|--------------------------------------------------------------------------
-*/
 
 require __DIR__ . '/auth.php';

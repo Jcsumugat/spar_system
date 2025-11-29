@@ -81,8 +81,7 @@ export default function Auth() {
                                         </div>
                                     </div>
                                     <h2 className="text-3xl font-bold mb-4">
-                                        Sanitary Permit Certification and
-                                        Renewal System
+                                        Sanitary Permit Certification System
                                     </h2>
                                     <p className="text-blue-100 text-lg">
                                         Streamlined permit management for a

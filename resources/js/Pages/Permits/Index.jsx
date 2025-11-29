@@ -14,6 +14,7 @@ import {
     Clock,
     Filter,
     Download,
+    ShieldAlert,
 } from "lucide-react";
 
 export default function Index({ auth, permits, filters }) {
@@ -21,6 +22,8 @@ export default function Index({ auth, permits, filters }) {
     const [permitType, setPermitType] = useState(filters.permit_type || "all");
     const [status, setStatus] = useState(filters.status || "all");
     const [showFilters, setShowFilters] = useState(false);
+
+    const canManagePermits = auth.user.role === "Admin";
 
     const handleSearch = () => {
         router.get(
@@ -134,13 +137,15 @@ export default function Index({ auth, permits, filters }) {
                     <h2 className="font-semibold text-xl text-gray-800 leading-tight">
                         Sanitary Permits
                     </h2>
-                    <Link
-                        href={route("permits.create")}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        <Plus className="w-4 h-4" />
-                        New Permit
-                    </Link>
+                    {canManagePermits && (
+                        <Link
+                            href={route("permits.create")}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                            <Plus className="w-4 h-4" />
+                            New Permit
+                        </Link>
+                    )}
                 </div>
             }
         >
@@ -157,6 +162,35 @@ export default function Index({ auth, permits, filters }) {
                             Manage sanitary permits and certifications
                         </p>
                     </div>
+
+                    {/* Role Restriction Alert */}
+                    {!canManagePermits && (
+                        <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+                            <div className="flex items-start">
+                                <div className="flex-shrink-0">
+                                    <ShieldAlert className="h-6 w-6 text-yellow-400" />
+                                </div>
+                                <div className="ml-3">
+                                    <h3 className="text-sm font-medium text-yellow-800">
+                                        Access Restricted
+                                    </h3>
+                                    <div className="mt-2 text-sm text-yellow-700">
+                                        <p>
+                                            This page is primarily for Lab
+                                            Inspectors to manage permits. As a{" "}
+                                            <span className="font-semibold">
+                                                Lab Assistant
+                                            </span>
+                                            , you have view-only access to
+                                            permits. Only Lab Inspectors can
+                                            create and delete permits.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Search and Filter Section */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
                         <div className="space-y-4">
@@ -298,7 +332,7 @@ export default function Index({ auth, permits, filters }) {
                                     {permits.data.length === 0 ? (
                                         <tr>
                                             <td
-                                                colSpan="7"
+                                                colSpan="8"
                                                 className="px-6 py-12 text-center"
                                             >
                                                 <FileText className="w-12 h-12 text-gray-400 mx-auto mb-3" />
@@ -421,6 +455,7 @@ export default function Index({ auth, permits, filters }) {
                                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                         <div className="flex flex-col items-center gap-2">
                                                             <div className="flex items-center gap-2">
+                                                                {/* View Button - Always Available */}
                                                                 <Link
                                                                     href={route(
                                                                         "permits.show",
@@ -431,18 +466,33 @@ export default function Index({ auth, permits, filters }) {
                                                                 >
                                                                     <Eye className="w-4 h-4" />
                                                                 </Link>
-                                                                <button
-                                                                    onClick={() =>
-                                                                        handleDelete(
-                                                                            permit
-                                                                        )
-                                                                    }
-                                                                    className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
-                                                                    title="Delete"
-                                                                >
-                                                                    <Trash2 className="w-4 h-4" />
-                                                                </button>
+
+                                                                {/* Delete Button - Only for authorized users */}
+                                                                {canManagePermits ? (
+                                                                    <button
+                                                                        onClick={() =>
+                                                                            handleDelete(
+                                                                                permit
+                                                                            )
+                                                                        }
+                                                                        className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
+                                                                        title="Delete"
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4" />
+                                                                    </button>
+                                                                ) : (
+                                                                    <button
+                                                                        disabled
+                                                                        className="text-gray-300 cursor-not-allowed p-1 relative group"
+                                                                        title="Only Lab Inspectors can delete permits"
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4" />
+                                                                        <AlertCircle className="w-3 h-3 absolute -top-1 -right-1 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                                    </button>
+                                                                )}
                                                             </div>
+
+                                                            {/* Print Button - Always Available */}
                                                             <Link
                                                                 href={route(
                                                                     "permits.print",

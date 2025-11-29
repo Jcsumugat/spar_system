@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\LabReport;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
+use App\Helpers\NotificationHelper;
 use Inertia\Inertia;
 
 class InspectionController extends Controller
@@ -91,6 +92,21 @@ class InspectionController extends Controller
             ->whereDate('created_at', $inspection->created_at->toDateString())
             ->with('submittedBy')
             ->first();
+
+        if ($labReport) {
+            $labReport->fecalysis_photo_url = $labReport->fecalysis_photo
+                ? url('storage/' . $labReport->fecalysis_photo)
+                : null;
+            $labReport->xray_sputum_photo_url = $labReport->xray_sputum_photo
+                ? url('storage/' . $labReport->xray_sputum_photo)
+                : null;
+            $labReport->receipt_photo_url = $labReport->receipt_photo
+                ? url('storage/' . $labReport->receipt_photo)
+                : null;
+            $labReport->dti_photo_url = $labReport->dti_photo
+                ? url('storage/' . $labReport->dti_photo)
+                : null;
+        }
 
         $inspection->load([
             'business',
@@ -176,9 +192,21 @@ class InspectionController extends Controller
         $validated = $request->validate([
             'findings' => 'nullable|string',
             'recommendations' => 'nullable|string',
+            'document_remarks' => 'nullable|array',
+            'document_remarks.fecalysis' => 'nullable|string|max:500',
+            'document_remarks.xray_sputum' => 'nullable|string|max:500',
+            'document_remarks.receipt' => 'nullable|string|max:500',
+            'document_remarks.dti' => 'nullable|string|max:500',
         ]);
 
-        $inspection->update($validated);
+        $inspection->update([
+            'findings' => $validated['findings'],
+            'recommendations' => $validated['recommendations'],
+            'fecalysis_inspector_remarks' => $validated['document_remarks']['fecalysis'] ?? null,
+            'xray_sputum_inspector_remarks' => $validated['document_remarks']['xray_sputum'] ?? null,
+            'receipt_inspector_remarks' => $validated['document_remarks']['receipt'] ?? null,
+            'dti_inspector_remarks' => $validated['document_remarks']['dti'] ?? null,
+        ]);
 
         ActivityLog::logActivity(
             'updated',
@@ -186,12 +214,24 @@ class InspectionController extends Controller
             'Saved progress for inspection ' . $inspection->inspection_number
         );
 
+        // Notify lab inspector about progress save
+        $labReport = LabReport::where('business_id', $inspection->business_id)
+            ->whereDate('created_at', $inspection->created_at->toDateString())
+            ->first();
+
+        if ($labReport && $labReport->submitted_by) {
+            NotificationHelper::inspectionProgressSaved(
+                $labReport->submitted_by,
+                $inspection->business,
+                $inspection
+            );
+        }
+
         return back()->with('success', 'Progress saved successfully.');
     }
 
     public function pass(Request $request, Inspection $inspection)
     {
-        // Validate inspection is still pending
         if ($inspection->result !== 'Pending') {
             return back()->with('error', 'This inspection has already been completed.');
         }
@@ -202,9 +242,13 @@ class InspectionController extends Controller
             'pass_with_conditions' => 'boolean',
             'document_statuses' => 'required|array',
             'document_statuses.*' => 'required|in:approved,rejected',
+            'document_remarks' => 'nullable|array',
+            'document_remarks.fecalysis' => 'nullable|string|max:500',
+            'document_remarks.xray_sputum' => 'nullable|string|max:500',
+            'document_remarks.receipt' => 'nullable|string|max:500',
+            'document_remarks.dti' => 'nullable|string|max:500',
         ]);
 
-        // Check all documents are approved
         $allApproved = collect($validated['document_statuses'])->every(function ($status) {
             return $status === 'approved';
         });
@@ -213,19 +257,42 @@ class InspectionController extends Controller
             return back()->with('error', 'All documents must be approved to pass the inspection.');
         }
 
-        // Update inspection
         $inspection->update([
             'result' => 'Approved',
             'findings' => $validated['findings'],
             'recommendations' => $validated['recommendations'],
+            'fecalysis_inspector_remarks' => $validated['document_remarks']['fecalysis'] ?? null,
+            'xray_sputum_inspector_remarks' => $validated['document_remarks']['xray_sputum'] ?? null,
+            'receipt_inspector_remarks' => $validated['document_remarks']['receipt'] ?? null,
+            'dti_inspector_remarks' => $validated['document_remarks']['dti'] ?? null,
         ]);
 
-        // Update associated lab report
         $labReport = LabReport::where('business_id', $inspection->business_id)
             ->whereDate('created_at', $inspection->created_at->toDateString())
             ->first();
 
         if ($labReport) {
+            // Build inspector remarks including document-specific remarks
+            $inspectorRemarks = $validated['recommendations'] ?? '';
+
+            if (!empty($validated['document_remarks'])) {
+                $remarksArray = [];
+                foreach ($validated['document_remarks'] as $docType => $remark) {
+                    if (!empty($remark)) {
+                        $docLabels = [
+                            'fecalysis' => 'Fecalysis',
+                            'xray_sputum' => 'X-Ray/Sputum',
+                            'receipt' => 'Receipt',
+                            'dti' => 'DTI'
+                        ];
+                        $remarksArray[] = "{$docLabels[$docType]}: {$remark}";
+                    }
+                }
+                if (!empty($remarksArray)) {
+                    $inspectorRemarks .= "\n\nDocument-specific notes:\n" . implode("\n", $remarksArray);
+                }
+            }
+
             $labReport->update([
                 'status' => 'approved',
                 'overall_result' => 'pass',
@@ -233,14 +300,26 @@ class InspectionController extends Controller
                 'xray_sputum_result' => $validated['document_statuses']['xray_sputum'] === 'approved' ? 'pass' : 'fail',
                 'receipt_result' => $validated['document_statuses']['receipt'] === 'approved' ? 'pass' : 'fail',
                 'dti_result' => $validated['document_statuses']['dti'] === 'approved' ? 'pass' : 'fail',
-                'inspector_remarks' => $validated['recommendations'],
+                'inspector_remarks' => $inspectorRemarks,
                 'inspected_by' => auth()->id(),
                 'inspected_at' => now(),
             ]);
+
+            // Notify lab inspector about lab report review
+            if ($labReport->submitted_by) {
+                NotificationHelper::labReportReviewed(
+                    $labReport->submitted_by,
+                    $inspection->business,
+                    $labReport,
+                    'approved'
+                );
+            }
         }
 
-        // Create or update the sanitary permit
         $permitType = $inspection->inspection_type === 'Initial' ? 'New' : 'Renewal';
+
+        // FIXED: Set issued_by to the staff who submitted the lab report, approved_by to current inspector
+        $issuedById = $labReport && $labReport->submitted_by ? $labReport->submitted_by : auth()->id();
 
         $permit = SanitaryPermit::updateOrCreate(
             ['business_id' => $inspection->business_id],
@@ -249,14 +328,13 @@ class InspectionController extends Controller
                 'permit_type' => $permitType,
                 'issue_date' => now(),
                 'expiry_date' => now()->addYear(),
-                'issued_by' => auth()->id(),
-                'approved_by' => auth()->id(),
+                'issued_by' => $issuedById, // Staff member who submitted the lab report
+                'approved_by' => auth()->id(), // Inspector who approved the inspection
                 'status' => 'Active',
                 'remarks' => $validated['recommendations'] ?? null,
             ]
         );
 
-        // Update inspection with permit_id
         $inspection->update(['permit_id' => $permit->id]);
 
         ActivityLog::logActivity(
@@ -265,13 +343,22 @@ class InspectionController extends Controller
             'Approved inspection ' . $inspection->inspection_number . ' and issued permit ' . $permit->permit_number
         );
 
+        // Notify lab inspector about inspection approval
+        if ($labReport && $labReport->submitted_by) {
+            NotificationHelper::inspectionApproved(
+                $labReport->submitted_by,
+                $inspection->business,
+                $inspection,
+                $permit
+            );
+        }
+
         return redirect()->route('inspections.show', $inspection)
             ->with('success', 'Inspection approved successfully! Sanitary permit has been issued.');
     }
 
     public function fail(Request $request, Inspection $inspection)
     {
-        // Validate inspection is still pending
         if ($inspection->result !== 'Pending') {
             return back()->with('error', 'This inspection has already been completed.');
         }
@@ -281,21 +368,49 @@ class InspectionController extends Controller
             'recommendations' => 'nullable|string',
             'document_statuses' => 'required|array',
             'document_statuses.*' => 'required|in:approved,rejected',
+            'document_remarks' => 'nullable|array',
+            'document_remarks.fecalysis' => 'nullable|string|max:500',
+            'document_remarks.xray_sputum' => 'nullable|string|max:500',
+            'document_remarks.receipt' => 'nullable|string|max:500',
+            'document_remarks.dti' => 'nullable|string|max:500',
         ]);
 
-        // Update inspection
         $inspection->update([
             'result' => 'Denied',
             'findings' => $validated['findings'],
             'recommendations' => $validated['recommendations'],
+            'fecalysis_inspector_remarks' => $validated['document_remarks']['fecalysis'] ?? null,
+            'xray_sputum_inspector_remarks' => $validated['document_remarks']['xray_sputum'] ?? null,
+            'receipt_inspector_remarks' => $validated['document_remarks']['receipt'] ?? null,
+            'dti_inspector_remarks' => $validated['document_remarks']['dti'] ?? null,
         ]);
 
-        // Update associated lab report
         $labReport = LabReport::where('business_id', $inspection->business_id)
             ->whereDate('created_at', $inspection->created_at->toDateString())
             ->first();
 
         if ($labReport) {
+            // Build inspector remarks including document-specific remarks
+            $inspectorRemarks = $validated['findings'] ?? '';
+
+            if (!empty($validated['document_remarks'])) {
+                $remarksArray = [];
+                foreach ($validated['document_remarks'] as $docType => $remark) {
+                    if (!empty($remark)) {
+                        $docLabels = [
+                            'fecalysis' => 'Fecalysis',
+                            'xray_sputum' => 'X-Ray/Sputum',
+                            'receipt' => 'Receipt',
+                            'dti' => 'DTI'
+                        ];
+                        $remarksArray[] = "{$docLabels[$docType]}: {$remark}";
+                    }
+                }
+                if (!empty($remarksArray)) {
+                    $inspectorRemarks .= "\n\nDocument-specific notes:\n" . implode("\n", $remarksArray);
+                }
+            }
+
             $labReport->update([
                 'status' => 'rejected',
                 'overall_result' => 'fail',
@@ -303,10 +418,20 @@ class InspectionController extends Controller
                 'xray_sputum_result' => $validated['document_statuses']['xray_sputum'] === 'approved' ? 'pass' : 'fail',
                 'receipt_result' => $validated['document_statuses']['receipt'] === 'approved' ? 'pass' : 'fail',
                 'dti_result' => $validated['document_statuses']['dti'] === 'approved' ? 'pass' : 'fail',
-                'inspector_remarks' => $validated['findings'],
+                'inspector_remarks' => $inspectorRemarks,
                 'inspected_by' => auth()->id(),
                 'inspected_at' => now(),
             ]);
+
+            // Notify lab inspector about lab report review
+            if ($labReport->submitted_by) {
+                NotificationHelper::labReportReviewed(
+                    $labReport->submitted_by,
+                    $inspection->business,
+                    $labReport,
+                    'rejected'
+                );
+            }
         }
 
         ActivityLog::logActivity(
@@ -314,6 +439,15 @@ class InspectionController extends Controller
             $inspection,
             'Denied inspection ' . $inspection->inspection_number
         );
+
+        // Notify lab inspector about inspection denial
+        if ($labReport && $labReport->submitted_by) {
+            NotificationHelper::inspectionDenied(
+                $labReport->submitted_by,
+                $inspection->business,
+                $inspection
+            );
+        }
 
         return redirect()->route('inspections.show', $inspection)
             ->with('success', 'Inspection has been marked as denied.');

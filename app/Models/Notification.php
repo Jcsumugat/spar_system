@@ -28,9 +28,9 @@ class Notification extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function markAsRead()
+    public function scopeForUser($query, $userId)
     {
-        $this->update(['read_at' => now()]);
+        return $query->where('user_id', $userId);
     }
 
     public function scopeUnread($query)
@@ -38,8 +38,8 @@ class Notification extends Model
         return $query->whereNull('read_at');
     }
 
-    public function scopeForUser($query, $userId)
+    public function markAsRead()
     {
-        return $query->where('user_id', $userId);
+        $this->update(['read_at' => now()]);
     }
 }

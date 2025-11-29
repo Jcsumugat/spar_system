@@ -29,6 +29,16 @@ export default function Show({ auth, labReport }) {
         }
     };
 
+    // Helper function to format role names
+    const formatRoleName = (role) => {
+        const roleMap = {
+            Admin: "Lab Inspector",
+            Staff: "Lab Assistant",
+            "Sanitary Inspector": "Sanitary Inspector",
+        };
+        return roleMap[role] || role;
+    };
+
     const getStatusBadge = () => {
         const badge = labReport.status_badge;
         return (
@@ -447,6 +457,16 @@ export default function Show({ auth, labReport }) {
                                     <p className="text-base font-medium text-gray-900">
                                         {labReport.submitted_by?.name ||
                                             "Unknown"}
+                                        {labReport.submitted_by?.role && (
+                                            <span className="text-sm font-normal text-gray-600">
+                                                {" "}
+                                                (
+                                                {formatRoleName(
+                                                    labReport.submitted_by.role
+                                                )}
+                                                )
+                                            </span>
+                                        )}
                                     </p>
                                 </div>
                             </div>
@@ -479,6 +499,19 @@ export default function Show({ auth, labReport }) {
                                             </p>
                                             <p className="text-base font-medium text-gray-900">
                                                 {labReport.inspected_by.name}
+                                                {labReport.inspected_by
+                                                    .role && (
+                                                    <span className="text-sm font-normal text-gray-600">
+                                                        {" "}
+                                                        (
+                                                        {formatRoleName(
+                                                            labReport
+                                                                .inspected_by
+                                                                .role
+                                                        )}
+                                                        )
+                                                    </span>
+                                                )}
                                             </p>
                                         </div>
                                     </div>

@@ -59,20 +59,27 @@ class NotificationHelper
         );
     }
 
-    public static function labReportSubmitted($userId, $business, $labReport)
+    public static function labReportSubmitted($userId, $business, $labReport, $inspection = null)
     {
         $applicationType = ucfirst($labReport->application_type);
+
+        $data = [
+            'business_id' => $business->id,
+            'lab_report_id' => $labReport->id,
+            'application_type' => $labReport->application_type,
+        ];
+
+        // If inspection exists, include it for inspector redirect
+        if ($inspection) {
+            $data['inspection_id'] = $inspection->id;
+        }
 
         return self::create(
             $userId,
             'lab_report_submitted',
             'New Lab Report Submitted',
             "{$applicationType} application lab report from {$business->business_name} requires review",
-            [
-                'business_id' => $business->id,
-                'lab_report_id' => $labReport->id,
-                'application_type' => $labReport->application_type,
-            ]
+            $data
         );
     }
 
@@ -87,6 +94,79 @@ class NotificationHelper
                 'business_id' => $business->id,
                 'business_type' => $business->business_type,
                 'barangay' => $business->barangay,
+            ]
+        );
+    }
+
+    // New notification methods for lab inspector
+    public static function inspectionProgressSaved($userId, $business, $inspection)
+    {
+        return self::create(
+            $userId,
+            'inspection_progress_saved',
+            'Inspection Progress Updated',
+            "Progress saved for inspection {$inspection->inspection_number} at {$business->business_name}",
+            [
+                'business_id' => $business->id,
+                'inspection_id' => $inspection->id,
+                'inspection_number' => $inspection->inspection_number,
+            ]
+        );
+    }
+
+    public static function inspectionApproved($userId, $business, $inspection, $permit = null)
+    {
+        $message = "Inspection {$inspection->inspection_number} for {$business->business_name} has been approved";
+
+        if ($permit) {
+            $message .= " and permit {$permit->permit_number} has been issued";
+        }
+
+        return self::create(
+            $userId,
+            'inspection_approved',
+            'Inspection Approved',
+            $message,
+            [
+                'business_id' => $business->id,
+                'inspection_id' => $inspection->id,
+                'inspection_number' => $inspection->inspection_number,
+                'permit_id' => $permit ? $permit->id : null,
+                'permit_number' => $permit ? $permit->permit_number : null,
+            ]
+        );
+    }
+
+    public static function inspectionDenied($userId, $business, $inspection)
+    {
+        return self::create(
+            $userId,
+            'inspection_denied',
+            'Inspection Denied',
+            "Inspection {$inspection->inspection_number} for {$business->business_name} has been denied",
+            [
+                'business_id' => $business->id,
+                'inspection_id' => $inspection->id,
+                'inspection_number' => $inspection->inspection_number,
+                'findings' => $inspection->findings,
+            ]
+        );
+    }
+
+    public static function labReportReviewed($userId, $business, $labReport, $status)
+    {
+        $statusText = ucfirst($status);
+
+        return self::create(
+            $userId,
+            'lab_report_reviewed',
+            "Lab Report {$statusText}",
+            "Lab report for {$business->business_name} has been {$status} by the inspector",
+            [
+                'business_id' => $business->id,
+                'lab_report_id' => $labReport->id,
+                'status' => $status,
+                'overall_result' => $labReport->overall_result,
             ]
         );
     }

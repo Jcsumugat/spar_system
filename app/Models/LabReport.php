@@ -337,4 +337,8 @@ class LabReport extends Model
         return $this->hasOne(Inspection::class, 'business_id', 'business_id')
             ->whereDate('created_at', $this->created_at->toDateString());
     }
+    public function labReports()
+    {
+        return $this->hasMany(LabReport::class);
+    }
 }

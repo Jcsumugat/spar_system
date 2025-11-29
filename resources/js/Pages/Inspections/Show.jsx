@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Head, Link, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import {
@@ -14,9 +14,19 @@ import {
     Save,
     Download,
     Eye,
+    MapPin,
+    Briefcase,
 } from "lucide-react";
 
 export default function Show({ auth, inspection }) {
+    const labReport = inspection.lab_report;
+
+    // Initialize document statuses from lab report if it exists
+    const getInitialDocumentStatus = (result) => {
+        if (!result) return "pending";
+        return result === "pass" ? "approved" : "rejected";
+    };
+
     const [showPassModal, setShowPassModal] = useState(false);
     const [showFailModal, setShowFailModal] = useState(false);
     const [passWithConditions, setPassWithConditions] = useState(false);
@@ -26,18 +36,39 @@ export default function Show({ auth, inspection }) {
     );
     const [processing, setProcessing] = useState(false);
 
-    // Document status tracking (4 required documents)
     const [documentStatuses, setDocumentStatuses] = useState({
-        fecalysis: "pending", // pending, approved, rejected
-        xray_sputum: "pending",
-        receipt: "pending",
-        dti: "pending",
+        fecalysis: labReport
+            ? getInitialDocumentStatus(labReport.fecalysis_result)
+            : "pending",
+        xray_sputum: labReport
+            ? getInitialDocumentStatus(labReport.xray_sputum_result)
+            : "pending",
+        receipt: labReport
+            ? getInitialDocumentStatus(labReport.receipt_result)
+            : "pending",
+        dti: labReport
+            ? getInitialDocumentStatus(labReport.dti_result)
+            : "pending",
+    });
+
+    const [documentRemarks, setDocumentRemarks] = useState({
+        fecalysis: inspection.fecalysis_inspector_remarks || "",
+        xray_sputum: inspection.xray_sputum_inspector_remarks || "",
+        receipt: inspection.receipt_inspector_remarks || "",
+        dti: inspection.dti_inspector_remarks || "",
     });
 
     const handleDocumentStatusChange = (docType, status) => {
         setDocumentStatuses((prev) => ({
             ...prev,
             [docType]: status,
+        }));
+    };
+
+    const handleDocumentRemarksChange = (docType, remarks) => {
+        setDocumentRemarks((prev) => ({
+            ...prev,
+            [docType]: remarks,
         }));
     };
 
@@ -68,6 +99,7 @@ export default function Show({ auth, inspection }) {
             {
                 findings,
                 recommendations,
+                document_remarks: documentRemarks,
             },
             {
                 preserveScroll: true,
@@ -95,7 +127,8 @@ export default function Show({ auth, inspection }) {
                 findings,
                 recommendations,
                 pass_with_conditions: passWithConditions,
-                document_statuses: documentStatuses, // ✅ ADDED: Send document statuses
+                document_statuses: documentStatuses,
+                document_remarks: documentRemarks,
             },
             {
                 preserveScroll: true,
@@ -125,7 +158,8 @@ export default function Show({ auth, inspection }) {
             {
                 findings,
                 recommendations,
-                document_statuses: documentStatuses, // ✅ ADDED: Send document statuses
+                document_statuses: documentStatuses,
+                document_remarks: documentRemarks,
             },
             {
                 preserveScroll: true,
@@ -137,7 +171,6 @@ export default function Show({ auth, inspection }) {
         );
     };
 
-    // ✅ UPDATED: Match database enum values (Approved, Denied, Pending)
     const getStatusBadge = (status) => {
         const styles = {
             Approved: "bg-green-100 text-green-800 border-green-200",
@@ -181,20 +214,12 @@ export default function Show({ auth, inspection }) {
         );
     };
 
-    // ✅ UPDATED: Check for "Pending" (matches database enum)
     const isPending = inspection.result === "Pending";
 
-    // ✅ Get lab report from inspection
-    const labReport = inspection.lab_report;
-
-    // ✅ Map documents from lab report
     const documentsByType = {
         fecalysis: labReport
             ? {
-                  file_path: labReport.fecalysis_photo_url?.replace(
-                      "/storage/",
-                      ""
-                  ),
+                  file_path: labReport.fecalysis_photo_url,
                   uploader: labReport.submitted_by,
                   created_at: labReport.submitted_at,
                   remarks: labReport.fecalysis_remarks,
@@ -202,10 +227,7 @@ export default function Show({ auth, inspection }) {
             : null,
         xray_sputum: labReport
             ? {
-                  file_path: labReport.xray_sputum_photo_url?.replace(
-                      "/storage/",
-                      ""
-                  ),
+                  file_path: labReport.xray_sputum_photo_url,
                   uploader: labReport.submitted_by,
                   created_at: labReport.submitted_at,
                   remarks: labReport.xray_sputum_remarks,
@@ -213,10 +235,7 @@ export default function Show({ auth, inspection }) {
             : null,
         receipt: labReport
             ? {
-                  file_path: labReport.receipt_photo_url?.replace(
-                      "/storage/",
-                      ""
-                  ),
+                  file_path: labReport.receipt_photo_url,
                   uploader: labReport.submitted_by,
                   created_at: labReport.submitted_at,
                   remarks: labReport.receipt_remarks,
@@ -224,7 +243,7 @@ export default function Show({ auth, inspection }) {
             : null,
         dti: labReport
             ? {
-                  file_path: labReport.dti_photo_url?.replace("/storage/", ""),
+                  file_path: labReport.dti_photo_url,
                   uploader: labReport.submitted_by,
                   created_at: labReport.submitted_at,
                   remarks: labReport.dti_remarks,
@@ -245,7 +264,6 @@ export default function Show({ auth, inspection }) {
 
             <div className="py-6 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto">
-                    {/* Header */}
                     <div className="mb-6">
                         <Link
                             href={route("inspections.index")}
@@ -265,43 +283,10 @@ export default function Show({ auth, inspection }) {
                             </div>
                             <div className="flex items-center gap-3">
                                 {getStatusBadge(inspection.result)}
-                                {isPending && (
-                                    <>
-                                        <button
-                                            onClick={handleSaveProgress}
-                                            disabled={processing}
-                                            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50"
-                                        >
-                                            <Save className="w-4 h-4" />
-                                            Save Progress
-                                        </button>
-                                        <button
-                                            onClick={() =>
-                                                setShowFailModal(true)
-                                            }
-                                            disabled={!canFail() || processing}
-                                            className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-                                        >
-                                            <XCircle className="w-4 h-4" />
-                                            Fail
-                                        </button>
-                                        <button
-                                            onClick={() =>
-                                                setShowPassModal(true)
-                                            }
-                                            disabled={!canPass() || processing}
-                                            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
-                                        >
-                                            <CheckCircle className="w-4 h-4" />
-                                            Pass
-                                        </button>
-                                    </>
-                                )}
                             </div>
                         </div>
                     </div>
 
-                    {/* Document Review Status */}
                     {isPending && (
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
                             <div className="flex items-center justify-between mb-4">
@@ -352,14 +337,13 @@ export default function Show({ auth, inspection }) {
                         </div>
                     )}
 
-                    {/* Inspection Information */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
                         <div className="p-6 border-b border-gray-200">
                             <h2 className="text-lg font-semibold text-gray-900">
                                 Inspection Information
                             </h2>
                         </div>
-                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <div className="flex items-start gap-3">
                                 <Building2 className="w-5 h-5 text-gray-400 mt-0.5" />
                                 <div>
@@ -371,6 +355,31 @@ export default function Show({ auth, inspection }) {
                                     </p>
                                     <p className="text-sm text-gray-600">
                                         {inspection.business?.owner_name}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                                <Briefcase className="w-5 h-5 text-gray-400 mt-0.5" />
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500">
+                                        Business Type
+                                    </p>
+                                    <p className="text-base font-semibold text-gray-900 mt-1">
+                                        {inspection.business?.business_type ||
+                                            "N/A"}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                                <MapPin className="w-5 h-5 text-gray-400 mt-0.5" />
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500">
+                                        Location
+                                    </p>
+                                    <p className="text-base font-semibold text-gray-900 mt-1">
+                                        {inspection.business?.address || "N/A"}
                                     </p>
                                 </div>
                             </div>
@@ -420,7 +429,6 @@ export default function Show({ auth, inspection }) {
                         </div>
                     </div>
 
-                    {/* Documents Review Section */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
                         <div className="p-6 border-b border-gray-200">
                             <h2 className="text-lg font-semibold text-gray-900">
@@ -464,21 +472,18 @@ export default function Show({ auth, inspection }) {
                                                     </div>
                                                 )}
                                             </div>
-                                            {!isPending && (
-                                                <div>
-                                                    {getDocumentStatusBadge(
-                                                        documentStatuses[type]
-                                                    )}
-                                                </div>
-                                            )}
+                                            <div>
+                                                {getDocumentStatusBadge(
+                                                    documentStatuses[type]
+                                                )}
+                                            </div>
                                         </div>
 
                                         {document ? (
                                             <div className="space-y-3">
-                                                {/* Document Preview */}
                                                 <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
                                                     <img
-                                                        src={`/storage/${document.file_path}`}
+                                                        src={document.file_path}
                                                         alt={
                                                             documentLabels[type]
                                                         }
@@ -486,7 +491,9 @@ export default function Show({ auth, inspection }) {
                                                     />
                                                     <div className="flex gap-2 mt-3">
                                                         <a
-                                                            href={`/storage/${document.file_path}`}
+                                                            href={
+                                                                document.file_path
+                                                            }
                                                             target="_blank"
                                                             rel="noopener noreferrer"
                                                             className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm"
@@ -495,7 +502,9 @@ export default function Show({ auth, inspection }) {
                                                             View Full Size
                                                         </a>
                                                         <a
-                                                            href={`/storage/${document.file_path}`}
+                                                            href={
+                                                                document.file_path
+                                                            }
                                                             download
                                                             className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm"
                                                         >
@@ -505,73 +514,116 @@ export default function Show({ auth, inspection }) {
                                                     </div>
                                                 </div>
 
-                                                {/* Document Notes */}
                                                 {document.remarks && (
                                                     <div className="p-3 bg-blue-50 rounded-lg">
                                                         <p className="text-sm text-blue-900">
                                                             <span className="font-medium">
-                                                                Notes:
+                                                                Submitter Notes:
                                                             </span>{" "}
                                                             {document.remarks}
                                                         </p>
                                                     </div>
                                                 )}
 
-                                                {/* Review Actions */}
+                                                {/* Show saved inspector remarks for non-pending inspections */}
+                                                {!isPending &&
+                                                    documentRemarks[type] && (
+                                                        <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                                                            <p className="text-sm text-purple-900">
+                                                                <span className="font-medium">
+                                                                    Inspector
+                                                                    Remarks:
+                                                                </span>{" "}
+                                                                {
+                                                                    documentRemarks[
+                                                                        type
+                                                                    ]
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    )}
+
                                                 {isPending && (
-                                                    <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                            Review Decision
-                                                        </label>
-                                                        <div className="space-y-2">
-                                                            <label className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                                                                <input
-                                                                    type="radio"
-                                                                    name={`document-${type}`}
-                                                                    checked={
-                                                                        documentStatuses[
-                                                                            type
-                                                                        ] ===
-                                                                        "approved"
-                                                                    }
-                                                                    onChange={() =>
-                                                                        handleDocumentStatusChange(
-                                                                            type,
+                                                    <div className="space-y-3">
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                                Review Decision
+                                                            </label>
+                                                            <div className="space-y-2">
+                                                                <label className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                                                    <input
+                                                                        type="radio"
+                                                                        name={`document-${type}`}
+                                                                        checked={
+                                                                            documentStatuses[
+                                                                                type
+                                                                            ] ===
                                                                             "approved"
-                                                                        )
-                                                                    }
-                                                                    className="w-4 h-4 text-green-600 focus:ring-2 focus:ring-green-500"
-                                                                />
-                                                                <CheckCircle className="w-5 h-5 text-green-600" />
-                                                                <span className="text-sm font-medium text-gray-700">
-                                                                    Approve
-                                                                    Document
-                                                                </span>
-                                                            </label>
-                                                            <label className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                                                                <input
-                                                                    type="radio"
-                                                                    name={`document-${type}`}
-                                                                    checked={
-                                                                        documentStatuses[
-                                                                            type
-                                                                        ] ===
-                                                                        "rejected"
-                                                                    }
-                                                                    onChange={() =>
-                                                                        handleDocumentStatusChange(
-                                                                            type,
+                                                                        }
+                                                                        onChange={() =>
+                                                                            handleDocumentStatusChange(
+                                                                                type,
+                                                                                "approved"
+                                                                            )
+                                                                        }
+                                                                        className="w-4 h-4 text-green-600 focus:ring-2 focus:ring-green-500"
+                                                                    />
+                                                                    <CheckCircle className="w-5 h-5 text-green-600" />
+                                                                    <span className="text-sm font-medium text-gray-700">
+                                                                        Approve
+                                                                        Document
+                                                                    </span>
+                                                                </label>
+                                                                <label className="flex items-center gap-3 p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                                                    <input
+                                                                        type="radio"
+                                                                        name={`document-${type}`}
+                                                                        checked={
+                                                                            documentStatuses[
+                                                                                type
+                                                                            ] ===
                                                                             "rejected"
-                                                                        )
-                                                                    }
-                                                                    className="w-4 h-4 text-red-600 focus:ring-2 focus:ring-red-500"
-                                                                />
-                                                                <XCircle className="w-5 h-5 text-red-600" />
-                                                                <span className="text-sm font-medium text-gray-700">
-                                                                    Reject
-                                                                    Document
-                                                                </span>
+                                                                        }
+                                                                        onChange={() =>
+                                                                            handleDocumentStatusChange(
+                                                                                type,
+                                                                                "rejected"
+                                                                            )
+                                                                        }
+                                                                        className="w-4 h-4 text-red-600 focus:ring-2 focus:ring-red-500"
+                                                                    />
+                                                                    <XCircle className="w-5 h-5 text-red-600" />
+                                                                    <span className="text-sm font-medium text-gray-700">
+                                                                        Reject
+                                                                        Document
+                                                                    </span>
+                                                                </label>
+                                                            </div>
+                                                        </div>
+
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                                Inspector
+                                                                Remarks
+                                                                (Optional)
                                                             </label>
+                                                            <textarea
+                                                                value={
+                                                                    documentRemarks[
+                                                                        type
+                                                                    ]
+                                                                }
+                                                                onChange={(e) =>
+                                                                    handleDocumentRemarksChange(
+                                                                        type,
+                                                                        e.target
+                                                                            .value
+                                                                    )
+                                                                }
+                                                                rows="3"
+                                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                                                placeholder="Add any specific notes about this document (e.g., quality issues, missing information, corrections needed)..."
+                                                            />
                                                         </div>
                                                     </div>
                                                 )}
@@ -590,7 +642,6 @@ export default function Show({ auth, inspection }) {
                         </div>
                     </div>
 
-                    {/* Findings and Recommendations */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
                         <div className="p-6 border-b border-gray-200">
                             <h2 className="text-lg font-semibold text-gray-900">
@@ -631,10 +682,38 @@ export default function Show({ auth, inspection }) {
                             </div>
                         </div>
                     </div>
+
+                    {isPending && (
+                        <div className="flex justify-end gap-3 mb-6">
+                            <button
+                                onClick={handleSaveProgress}
+                                disabled={processing}
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 font-medium"
+                            >
+                                <Save className="w-5 h-5" />
+                                Save Progress
+                            </button>
+                            <button
+                                onClick={() => setShowFailModal(true)}
+                                disabled={!canFail() || processing}
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 font-medium"
+                            >
+                                <XCircle className="w-5 h-5" />
+                                Fail Inspection
+                            </button>
+                            <button
+                                onClick={() => setShowPassModal(true)}
+                                disabled={!canPass() || processing}
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 font-medium"
+                            >
+                                <CheckCircle className="w-5 h-5" />
+                                Pass Inspection
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 
-            {/* Pass Modal */}
             {showPassModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
@@ -667,25 +746,6 @@ export default function Show({ auth, inspection }) {
                                 </p>
                             </div>
 
-                            <div className="mb-4">
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={passWithConditions}
-                                        onChange={(e) =>
-                                            setPassWithConditions(
-                                                e.target.checked
-                                            )
-                                        }
-                                        className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                                    />
-                                    <span className="text-sm text-gray-700">
-                                        Pass with conditions (requires
-                                        follow-up)
-                                    </span>
-                                </label>
-                            </div>
-
                             <p className="text-sm text-gray-700 mb-4">
                                 Are you sure you want to pass this inspection?
                                 This will allow the business to proceed with
@@ -715,7 +775,6 @@ export default function Show({ auth, inspection }) {
                 </div>
             )}
 
-            {/* Fail Modal */}
             {showFailModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-lg shadow-xl max-w-md w-full">

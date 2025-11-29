@@ -31,6 +31,9 @@ class LabReportController extends Controller
     public function create(Request $request)
     {
         $businesses = Business::active()
+            ->whereDoesntHave('labReports', function ($query) {
+                $query->whereIn('status', ['pending', 'approved']);
+            })
             ->get(['id', 'business_name', 'owner_name', 'permit_status']);
 
         $selectedBusinessId = $request->query('business_id');
@@ -67,34 +70,28 @@ class LabReportController extends Controller
 
         DB::beginTransaction();
         try {
-            // Handle file uploads
             $fecalysisPath = $request->file('fecalysis_photo')->store('lab-reports/fecalysis', 'public');
             $xrayPath = $request->file('xray_sputum_photo')->store('lab-reports/xray-sputum', 'public');
             $receiptPath = $request->file('receipt_photo')->store('lab-reports/receipts', 'public');
             $dtiPath = $request->file('dti_photo')->store('lab-reports/dti', 'public');
 
-            // Get business info for notification
             $business = Business::findOrFail($validated['business_id']);
 
-            // Create lab report (results will be set by inspector)
             $labReport = LabReport::create([
                 'business_id' => $validated['business_id'],
                 'application_type' => $validated['application_type'],
                 'submitted_by' => auth()->id(),
 
-                // Photo paths
                 'fecalysis_photo' => $fecalysisPath,
                 'xray_sputum_photo' => $xrayPath,
                 'receipt_photo' => $receiptPath,
                 'dti_photo' => $dtiPath,
 
-                // Test results - null until inspector evaluates
                 'fecalysis_result' => null,
                 'xray_sputum_result' => null,
                 'receipt_result' => null,
                 'dti_result' => null,
 
-                // Remarks from submitter
                 'fecalysis_remarks' => $validated['fecalysis_remarks'] ?? null,
                 'xray_sputum_remarks' => $validated['xray_sputum_remarks'] ?? null,
                 'receipt_remarks' => $validated['receipt_remarks'] ?? null,
@@ -117,7 +114,8 @@ class LabReportController extends Controller
                 NotificationHelper::labReportSubmitted(
                     $inspector->id,
                     $business,
-                    $labReport
+                    $labReport,
+                    $inspection
                 );
             }
 
@@ -151,7 +149,6 @@ class LabReportController extends Controller
     {
         $labReport->load(['business', 'submittedBy', 'inspectedBy']);
 
-        // Get associated inspection if exists
         $inspection = Inspection::where('business_id', $labReport->business_id)
             ->whereDate('created_at', $labReport->created_at->toDateString())
             ->first();
@@ -172,7 +169,6 @@ class LabReportController extends Controller
         $businesses = Business::active()
             ->get(['id', 'business_name', 'owner_name', 'permit_status']);
 
-        // Add accessor URLs
         $labReport->fecalysis_photo_url = $labReport->fecalysis_photo
             ? Storage::url($labReport->fecalysis_photo)
             : null;
@@ -285,18 +281,38 @@ class LabReportController extends Controller
             return back()->with('error', 'Approved lab reports cannot be deleted.');
         }
 
-        // Delete associated files
-        Storage::disk('public')->delete([
-            $labReport->fecalysis_photo,
-            $labReport->xray_sputum_photo,
-            $labReport->receipt_photo,
-            $labReport->dti_photo,
-        ]);
+        DB::beginTransaction();
+        try {
+            // Delete associated inspection if it exists
+            $inspection = Inspection::where('business_id', $labReport->business_id)
+                ->whereDate('created_at', $labReport->created_at->toDateString())
+                ->first();
 
-        $labReport->delete();
+            if ($inspection) {
+                // Only delete if inspection is still pending
+                if ($inspection->result === 'Pending') {
+                    $inspection->delete();
+                }
+            }
 
-        return redirect()->route('lab-reports.index')
-            ->with('success', 'Lab report deleted successfully.');
+            // Delete associated files
+            Storage::disk('public')->delete([
+                $labReport->fecalysis_photo,
+                $labReport->xray_sputum_photo,
+                $labReport->receipt_photo,
+                $labReport->dti_photo,
+            ]);
+
+            $labReport->delete();
+
+            DB::commit();
+
+            return redirect()->route('lab-reports.index')
+                ->with('success', 'Lab report and associated inspection deleted successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to delete lab report: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -430,17 +446,22 @@ class LabReportController extends Controller
             : 1;
         $inspectionNumber = 'INS-' . date('Y') . '-' . str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
 
-        // Get the first available sanitary inspector
-        $inspector = User::where('role', 'Sanitary Inspector')
+        // Get the first available inspector (Admin or Sanitary Inspector)
+        $inspector = User::whereIn('role', ['Admin', 'Sanitary Inspector'])
             ->where('is_active', 1)
             ->first();
+
+        // If no inspector found, throw an error
+        if (!$inspector) {
+            throw new \Exception('No active inspector available to assign to this inspection.');
+        }
 
         $inspection = Inspection::create([
             'inspection_number' => $inspectionNumber,
             'business_id' => $labReport->business_id,
             'inspection_date' => now()->addDays(3), // Schedule 3 days from now
             'inspection_time' => '09:00:00',
-            'inspector_id' => $inspector ? $inspector->id : null,
+            'inspector_id' => $inspector->id, // Assign the inspector
             'inspection_type' => 'Initial',
             'result' => 'Pending',
             'findings' => 'Lab report submitted on ' . now()->format('F d, Y') . '. Physical inspection scheduled for new application.',

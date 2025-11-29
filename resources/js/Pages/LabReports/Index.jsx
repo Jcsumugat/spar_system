@@ -14,12 +14,17 @@ import {
     XCircle,
     Clock,
     AlertCircle,
+    RefreshCw,
+    ShieldAlert,
 } from "lucide-react";
 
 export default function Index({ auth, labReports }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [typeFilter, setTypeFilter] = useState("all");
+
+    // Check if user is Lab Assistant (Staff role)
+    const isLabAssistant = auth.user.role === "Staff";
 
     // Filter lab reports
     const filteredReports = labReports.data.filter((report) => {
@@ -40,7 +45,12 @@ export default function Index({ auth, labReports }) {
         return matchesSearch && matchesStatus && matchesType;
     });
 
-    const handleDelete = (id) => {
+    const handleDelete = (id, status) => {
+        if (status !== "pending") {
+            alert("Only pending lab reports can be deleted.");
+            return;
+        }
+
         if (
             confirm(
                 "Are you sure you want to delete this lab report? This action cannot be undone."
@@ -108,15 +118,48 @@ export default function Index({ auth, labReports }) {
                                     sanitary permits
                                 </p>
                             </div>
-                            <Link
-                                href={route("lab-reports.create")}
-                                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                                <Plus className="w-5 h-5 mr-2" />
-                                New Lab Report
-                            </Link>
+                            {isLabAssistant && (
+                                <Link
+                                    href={route("lab-reports.create")}
+                                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                    <Plus className="w-5 h-5 mr-2" />
+                                    New Lab Report
+                                </Link>
+                            )}
                         </div>
                     </div>
+
+                    {/* Role Restriction Alert */}
+                    {!isLabAssistant && (
+                        <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+                            <div className="flex items-start">
+                                <div className="flex-shrink-0">
+                                    <ShieldAlert className="h-6 w-6 text-yellow-400" />
+                                </div>
+                                <div className="ml-3">
+                                    <h3 className="text-sm font-medium text-yellow-800">
+                                        Access Restricted
+                                    </h3>
+                                    <div className="mt-2 text-sm text-yellow-700">
+                                        <p>
+                                            This page is primarily for Lab
+                                            Assistants to manage laboratory
+                                            reports. As a{" "}
+                                            <span className="font-semibold">
+                                                Lab Inspector
+                                            </span>
+                                            , you have view-only access to lab
+                                            reports. Lab Assistants are
+                                            responsible for creating, editing,
+                                            and managing laboratory examination
+                                            reports.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Filters and Search */}
                     <div className="bg-white rounded-lg shadow mb-6">
@@ -189,9 +232,6 @@ export default function Index({ auth, labReports }) {
                                             Type
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Overall Result
-                                        </th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Status
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -214,20 +254,23 @@ export default function Index({ auth, labReports }) {
                                                     No lab reports found
                                                 </h3>
                                                 <p className="mt-1 text-sm text-gray-500">
-                                                    Get started by creating a
-                                                    new lab report.
+                                                    {isLabAssistant
+                                                        ? "Get started by creating a new lab report."
+                                                        : "No lab reports are currently available."}
                                                 </p>
-                                                <div className="mt-6">
-                                                    <Link
-                                                        href={route(
-                                                            "lab-reports.create"
-                                                        )}
-                                                        className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-                                                    >
-                                                        <Plus className="w-5 h-5 mr-2" />
-                                                        New Lab Report
-                                                    </Link>
-                                                </div>
+                                                {isLabAssistant && (
+                                                    <div className="mt-6">
+                                                        <Link
+                                                            href={route(
+                                                                "lab-reports.create"
+                                                            )}
+                                                            className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                                                        >
+                                                            <Plus className="w-5 h-5 mr-2" />
+                                                            New Lab Report
+                                                        </Link>
+                                                    </div>
+                                                )}
                                             </td>
                                         </tr>
                                     ) : (
@@ -268,12 +311,6 @@ export default function Index({ auth, labReports }) {
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    {getResultBadge(
-                                                        report.overall_result,
-                                                        report.status
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
                                                     <span
                                                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${report.status_badge.class}`}
                                                     >
@@ -303,6 +340,7 @@ export default function Index({ auth, labReports }) {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                                     <div className="flex items-center gap-2">
+                                                        {/* View Button - Always Available */}
                                                         <Link
                                                             href={route(
                                                                 "lab-reports.show",
@@ -313,32 +351,79 @@ export default function Index({ auth, labReports }) {
                                                         >
                                                             <Eye className="w-5 h-5" />
                                                         </Link>
-                                                        {report.status ===
-                                                            "pending" && (
-                                                            <>
+
+                                                        {/* Edit Button - Only for Lab Assistants */}
+                                                        {isLabAssistant &&
+                                                        report.status ===
+                                                            "pending" ? (
+                                                            <Link
+                                                                href={route(
+                                                                    "lab-reports.edit",
+                                                                    report.id
+                                                                )}
+                                                                className="text-green-600 hover:text-green-900"
+                                                                title="Edit"
+                                                            >
+                                                                <Edit className="w-5 h-5" />
+                                                            </Link>
+                                                        ) : isLabAssistant ? (
+                                                            <button
+                                                                disabled
+                                                                className="text-gray-300 cursor-not-allowed relative group"
+                                                                title="Cannot edit approved/rejected reports"
+                                                            >
+                                                                <Edit className="w-5 h-5" />
+                                                                <AlertCircle className="w-3 h-3 absolute -top-1 -right-1 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                            </button>
+                                                        ) : null}
+
+                                                        {/* Delete Button - Only for Lab Assistants */}
+                                                        {isLabAssistant &&
+                                                        report.status ===
+                                                            "pending" ? (
+                                                            <button
+                                                                onClick={() =>
+                                                                    handleDelete(
+                                                                        report.id,
+                                                                        report.status
+                                                                    )
+                                                                }
+                                                                className="text-red-600 hover:text-red-900"
+                                                                title="Delete"
+                                                            >
+                                                                <Trash2 className="w-5 h-5" />
+                                                            </button>
+                                                        ) : isLabAssistant ? (
+                                                            <button
+                                                                disabled
+                                                                className="text-gray-300 cursor-not-allowed relative group"
+                                                                title="Cannot delete approved/rejected reports"
+                                                            >
+                                                                <Trash2 className="w-5 h-5" />
+                                                                <AlertCircle className="w-3 h-3 absolute -top-1 -right-1 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                            </button>
+                                                        ) : null}
+
+                                                        {/* Resubmit Button - Only for Lab Assistants and Failed Reports */}
+                                                        {isLabAssistant &&
+                                                            report.status ===
+                                                                "rejected" &&
+                                                            report.overall_result ===
+                                                                "fail" && (
                                                                 <Link
                                                                     href={route(
-                                                                        "lab-reports.edit",
-                                                                        report.id
+                                                                        "lab-reports.create",
+                                                                        {
+                                                                            business_id:
+                                                                                report.business_id,
+                                                                        }
                                                                     )}
-                                                                    className="text-green-600 hover:text-green-900"
-                                                                    title="Edit"
+                                                                    className="text-orange-600 hover:text-orange-900"
+                                                                    title="Resubmit"
                                                                 >
-                                                                    <Edit className="w-5 h-5" />
+                                                                    <RefreshCw className="w-5 h-5" />
                                                                 </Link>
-                                                                <button
-                                                                    onClick={() =>
-                                                                        handleDelete(
-                                                                            report.id
-                                                                        )
-                                                                    }
-                                                                    className="text-red-600 hover:text-red-900"
-                                                                    title="Delete"
-                                                                >
-                                                                    <Trash2 className="w-5 h-5" />
-                                                                </button>
-                                                            </>
-                                                        )}
+                                                            )}
                                                     </div>
                                                 </td>
                                             </tr>

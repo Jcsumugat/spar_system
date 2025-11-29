@@ -54,6 +54,9 @@ class BusinessController extends Controller
 
     public function store(Request $request)
     {
+        // Log the incoming request data for debugging
+        Log::info('Business Store Request:', $request->all());
+
         $validated = $request->validate([
             'business_name' => 'required|string|max:255',
             'owner_name' => 'required|string|max:255',
@@ -77,7 +80,7 @@ class BusinessController extends Controller
             );
 
             // Send notifications to all Lab Inspectors (admin role)
-            $inspectors = User::where('role', 'admin')->get();
+            $inspectors = User::where('role', 'Admin')->get();
 
             foreach ($inspectors as $inspector) {
                 NotificationHelper::businessRegistered(
@@ -92,6 +95,7 @@ class BusinessController extends Controller
                 ->with('success', 'Business registered successfully. Lab Inspectors have been notified.');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Business Store Error:', ['error' => $e->getMessage()]);
 
             return back()->withErrors(['error' => 'Failed to register business: ' . $e->getMessage()])
                 ->withInput();
@@ -122,7 +126,7 @@ class BusinessController extends Controller
         $validated = $request->validate([
             'business_name' => 'required|string|max:255',
             'owner_name' => 'required|string|max:255',
-            'business_type' => 'required|in:Food,Non-Food',
+            'business_type' => 'required|in:Food Establishment,Non-Food Establishment',
             'address' => 'required|string',
             'barangay' => 'required|string|max:255',
             'contact_number' => 'required|string|max:255',

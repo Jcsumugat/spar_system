@@ -25,44 +25,29 @@ export default function Create({ auth }) {
         number_of_employees: "",
     });
 
+    // Barangays of Tibiao, Antique
     const barangays = [
         "Alegre",
-        "Antolino",
-        "Arorogan",
-        "Bagacay",
-        "Baybay",
-        "Bio-os",
-        "Bongbongan I",
-        "Bongbongan II",
-        "Cata-an",
-        "Cordova",
-        "Cubay",
+        "Amar",
+        "Bandoja",
+        "Castillo",
+        "Esparagoza",
         "Importante",
-        "Isidro Cornejo",
-        "Jinalinan",
-        "Lanag",
-        "Lindero",
-        "Mabini",
+        "La Paz",
         "Malabor",
-        "Manlacbo",
-        "Masanag",
-        "Merchandise",
-        "Monlaque",
-        "Moroboro",
-        "Nagsubuan",
+        "Martinez",
         "Natividad",
-        "Pangpang",
-        "Pasong",
-        "Pleasant Valley",
         "Poblacion",
-        "Progreso",
-        "San Agustin",
-        "San Jose",
-        "San Pedro",
-        "Tico",
+        "Pitac",
+        "Salazar",
+        "San Francisco Norte",
+        "San Francisco Sur",
+        "San Isidro",
+        "Santa Ana",
+        "Santa Justa",
+        "Santo Rosario",
         "Tigbaboy",
         "Tuno",
-        "Union",
     ];
 
     const foodEstablishmentCategories = [
@@ -96,7 +81,26 @@ export default function Create({ auth }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post(route("businesses.store"));
+
+        console.log("Form data:", data); // Debug log
+
+        post(route("businesses.store"), {
+            onSuccess: () => {
+                console.log("Business registered successfully");
+            },
+            onError: (errors) => {
+                console.error("Form errors:", errors);
+            },
+        });
+    };
+
+    const handleBusinessTypeChange = (e) => {
+        const newType = e.target.value;
+        setData({
+            ...data,
+            business_type: newType,
+            establishment_category: "", // Reset category when type changes
+        });
     };
 
     return (
@@ -174,16 +178,7 @@ export default function Create({ auth }) {
                                         </label>
                                         <select
                                             value={data.business_type}
-                                            onChange={(e) => {
-                                                setData(
-                                                    "business_type",
-                                                    e.target.value
-                                                );
-                                                setData(
-                                                    "establishment_category",
-                                                    ""
-                                                );
-                                            }}
+                                            onChange={handleBusinessTypeChange}
                                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             required
                                         >

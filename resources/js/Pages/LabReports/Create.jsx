@@ -336,8 +336,24 @@ export default function Create({
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+        console.log("Submitting lab report with data:", {
+            business_id: data.business_id,
+            application_type: data.application_type,
+            has_fecalysis: !!data.fecalysis_photo,
+            has_xray: !!data.xray_sputum_photo,
+            has_receipt: !!data.receipt_photo,
+            has_dti: !!data.dti_photo,
+        });
+
         post(route("lab-reports.store"), {
             forceFormData: true,
+            onError: (errors) => {
+                console.error("Lab report submission errors:", errors);
+            },
+            onSuccess: () => {
+                console.log("Lab report submitted successfully");
+            },
         });
     };
 

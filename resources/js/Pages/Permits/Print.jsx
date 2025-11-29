@@ -304,6 +304,7 @@ export default function Print({ permit }) {
                     <p>
                         <strong>Recommending approval:</strong>
                     </p>
+                    <br></br>
                     <p className="mb-0 mt-4">
                         <strong>JULINETTE JOY D. SALVACION, RN</strong>
                     </p>
@@ -312,6 +313,7 @@ export default function Print({ permit }) {
                     <p className="mb-0 mt-5">
                         <strong>Approved:</strong>
                     </p>
+                    <br></br>
                     <p className="mb-0 mt-4">
                         <strong>RUE JOANNA F. ESPAÑOLA, M.D.</strong>
                     </p>
