@@ -10,3 +10,6 @@
 //tas ang sa lab reports is nakasulod didto man ang mga client information bala nga gin pang add ni assistant na client seym man sanda sa inspector sa add business na pero client garing ana
 //tas sa may babaw bala aw add client ana ibutang tas pag click to makita man  bala ang registration form parehas sa add business na makita ang personal information na man kag mga lab results kag may remarks ma
 //mo lng da sa assistant nong  thank u daad ma gets mo nong haha
+
+
+The issue is that when submitting Lab Reports with renewal application type, it is submitted but doesnt store in inspection database and doenst display in inspection records, only in Lab reports. But New appliction Lab reports are perfectly fine.

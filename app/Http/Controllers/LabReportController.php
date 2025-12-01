@@ -103,10 +103,8 @@ class LabReportController extends Controller
                 'submitted_at' => now(),
             ]);
 
-            $inspection = null;
-            if ($validated['application_type'] === 'new') {
-                $inspection = $this->createInspectionForLabReport($labReport);
-            }
+            // Create inspection for both new and renewal applications
+            $inspection = $this->createInspectionForLabReport($labReport);
 
             $inspectors = User::where('role', 'admin')->get();
 
@@ -121,12 +119,7 @@ class LabReportController extends Controller
 
             DB::commit();
 
-            $message = 'Lab report submitted successfully.';
-            if ($inspection) {
-                $message .= ' Physical inspection #' . $inspection->inspection_number . ' has been scheduled for ' . $inspection->inspection_date->format('F d, Y') . '.';
-            } else {
-                $message .= ' The documents will be reviewed by an inspector.';
-            }
+            $message = 'Lab report submitted successfully. Physical inspection #' . $inspection->inspection_number . ' has been scheduled for ' . $inspection->inspection_date->format('F d, Y') . '.';
 
             return redirect()->route('lab-reports.index')
                 ->with('success', $message);
@@ -435,7 +428,7 @@ class LabReportController extends Controller
     }
 
     /**
-     * Create an inspection automatically when lab report is submitted (only for new applications)
+     * Create an inspection automatically when lab report is submitted (for both new and renewal applications)
      */
     private function createInspectionForLabReport(LabReport $labReport)
     {
@@ -456,15 +449,21 @@ class LabReportController extends Controller
             throw new \Exception('No active inspector available to assign to this inspection.');
         }
 
+        // Determine inspection type and details based on application type
+        $inspectionType = $labReport->application_type === 'new' ? 'Initial' : 'Renewal';
+        $findings = $labReport->application_type === 'new'
+            ? 'Lab report submitted on ' . now()->format('F d, Y') . '. Physical inspection scheduled for new application.'
+            : 'Lab report submitted on ' . now()->format('F d, Y') . '. Physical inspection scheduled for permit renewal.';
+
         $inspection = Inspection::create([
             'inspection_number' => $inspectionNumber,
             'business_id' => $labReport->business_id,
             'inspection_date' => now()->addDays(3), // Schedule 3 days from now
             'inspection_time' => '09:00:00',
-            'inspector_id' => $inspector->id, // Assign the inspector
-            'inspection_type' => 'Initial',
+            'inspector_id' => $inspector->id,
+            'inspection_type' => $inspectionType, // Dynamic based on application type
             'result' => 'Pending',
-            'findings' => 'Lab report submitted on ' . now()->format('F d, Y') . '. Physical inspection scheduled for new application.',
+            'findings' => $findings,
             'recommendations' => 'Conduct on-site inspection to verify compliance with sanitary standards.',
         ]);
 
