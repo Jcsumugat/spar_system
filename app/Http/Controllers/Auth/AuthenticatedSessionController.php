@@ -24,15 +24,23 @@ class AuthenticatedSessionController extends Controller
         ]);
     }
 
-    /**
-     * Handle an incoming authentication request.
-     */
     public function store(LoginRequest $request): RedirectResponse
     {
         $request->authenticate();
 
         $request->session()->regenerate();
 
+        $user = Auth::user();
+
+        // Store the active role in session (default to user's role)
+        $request->session()->put('active_role', $user->role);
+
+        // Redirect based on user role
+        if ($user->role === 'Staff' || $user->position === 'Lab Assistant') {
+            return redirect()->route('lab-reports.index');
+        }
+
+        // Default redirect for Admin/Lab Inspector
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

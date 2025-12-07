@@ -699,7 +699,7 @@ export default function Show({ auth, inspection }) {
                                 className="inline-flex items-center gap-2 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 font-medium"
                             >
                                 <XCircle className="w-5 h-5" />
-                                Fail Inspection
+                                Failed Inspection
                             </button>
                             <button
                                 onClick={() => setShowPassModal(true)}
@@ -707,7 +707,7 @@ export default function Show({ auth, inspection }) {
                                 className="inline-flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 font-medium"
                             >
                                 <CheckCircle className="w-5 h-5" />
-                                Pass Inspection
+                                Passed Inspection
                             </button>
                         </div>
                     )}
@@ -724,7 +724,7 @@ export default function Show({ auth, inspection }) {
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-semibold text-gray-900">
-                                        Pass Inspection
+                                        Passed Inspection
                                     </h3>
                                     <p className="text-sm text-gray-500">
                                         {inspection.inspection_number}
@@ -767,7 +767,7 @@ export default function Show({ auth, inspection }) {
                                 >
                                     {processing
                                         ? "Processing..."
-                                        : "Pass Inspection"}
+                                        : "Passed Inspection"}
                                 </button>
                             </div>
                         </div>
@@ -785,7 +785,7 @@ export default function Show({ auth, inspection }) {
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-semibold text-gray-900">
-                                        Fail Inspection
+                                        Failed Inspection
                                     </h3>
                                     <p className="text-sm text-gray-500">
                                         {inspection.inspection_number}
@@ -848,7 +848,7 @@ export default function Show({ auth, inspection }) {
                                 >
                                     {processing
                                         ? "Processing..."
-                                        : "Fail Inspection"}
+                                        : "Failed Inspection"}
                                 </button>
                             </div>
                         </div>

@@ -352,31 +352,6 @@ export default function Index({ auth, labReports }) {
                                                             <Eye className="w-5 h-5" />
                                                         </Link>
 
-                                                        {/* Edit Button - Only for Lab Assistants */}
-                                                        {isLabAssistant &&
-                                                        report.status ===
-                                                            "pending" ? (
-                                                            <Link
-                                                                href={route(
-                                                                    "lab-reports.edit",
-                                                                    report.id
-                                                                )}
-                                                                className="text-green-600 hover:text-green-900"
-                                                                title="Edit"
-                                                            >
-                                                                <Edit className="w-5 h-5" />
-                                                            </Link>
-                                                        ) : isLabAssistant ? (
-                                                            <button
-                                                                disabled
-                                                                className="text-gray-300 cursor-not-allowed relative group"
-                                                                title="Cannot edit approved/rejected reports"
-                                                            >
-                                                                <Edit className="w-5 h-5" />
-                                                                <AlertCircle className="w-3 h-3 absolute -top-1 -right-1 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                                            </button>
-                                                        ) : null}
-
                                                         {/* Delete Button - Only for Lab Assistants */}
                                                         {isLabAssistant &&
                                                         report.status ===

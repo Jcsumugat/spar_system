@@ -19,7 +19,6 @@ export default function Print({ permit }) {
         };
 
         const handleBeforePrint = () => {
-            // Optional: You can add logic before printing
             console.log("Preparing to print...");
         };
 
@@ -39,7 +38,7 @@ export default function Print({ permit }) {
             {
                 preserveState: true,
                 preserveScroll: true,
-                only: [], // Don't reload any data
+                only: [],
                 onSuccess: () => {
                     console.log("Print logged successfully");
                 },
@@ -70,13 +69,28 @@ export default function Print({ permit }) {
 
             <style>{`
                 @media print {
+                    @page {
+                        size: letter;
+                        margin: 0.5in;
+                    }
+
                     body {
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
+                        margin: 0;
+                        padding: 0;
                     }
 
                     .no-print {
                         display: none !important;
+                    }
+
+                    .permit-container {
+                        margin: 0 !important;
+                        padding: 20px !important;
+                        min-height: auto !important;
+                        box-shadow: none !important;
+                        page-break-inside: avoid;
                     }
 
                     .permit-container::before {
@@ -85,6 +99,9 @@ export default function Print({ permit }) {
                 }
 
                 * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
                     font-family: Arial, sans-serif;
                 }
 
@@ -95,14 +112,13 @@ export default function Print({ permit }) {
 
                 .permit-container {
                     background: #fff url('/images/tibiao_logo.png') no-repeat center center;
-                    background-size: 400px 400px;
+                    background-size: 350px 350px;
                     background-attachment: fixed;
                     background-blend-mode: lighten;
                     opacity: 0.95;
                     max-width: 750px;
-                    min-height: 900px;
                     margin: 20px auto;
-                    padding: 40px;
+                    padding: 30px;
                     border: 2px solid #000;
                     border-radius: 10px;
                     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -114,7 +130,7 @@ export default function Print({ permit }) {
                     position: absolute;
                     inset: 0;
                     background: url('/images/tibiao_logo.png') no-repeat center center;
-                    background-size: 400px 400px;
+                    background-size: 350px 350px;
                     opacity: 0.2;
                     z-index: 0;
                 }
@@ -129,7 +145,7 @@ export default function Print({ permit }) {
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    margin-bottom: 10px;
+                    margin-bottom: 15px;
                 }
 
                 .permit-header .header-text {
@@ -138,28 +154,30 @@ export default function Print({ permit }) {
                 }
 
                 .header-text h6 {
-                    margin-bottom: 0;
+                    margin: 5px 0;
+                    font-size: 15px;
                     font-family: Arial, sans-serif;
                 }
 
                 .permit-title {
-                    font-size: 28px;
+                    font-size: 30px;
                     font-weight: bold;
                     border: 2px solid #000;
                     display: inline-block;
-                    padding: 5px 20px;
-                    margin: 30px 0 40px 0;
+                    padding: 10px 30px;
+                    margin: 20px 0 40px 0;
                     background: #fff;
                     font-family: Arial, sans-serif;
                 }
 
                 .content-section {
-                    margin-top: 10px;
+                    margin-top: 15px;
                 }
 
                 .content-section p {
-                    margin: 15px 0;
+                    margin: 16px 0;
                     line-height: 1.8;
+                    font-size: 15px;
                     font-family: Arial, sans-serif;
                 }
 
@@ -168,11 +186,21 @@ export default function Print({ permit }) {
                 }
 
                 .signature {
-                    margin-top: 40px;
+                    margin-top: 50px;
                 }
 
                 .signature p {
+                    margin: 6px 0;
+                    font-size: 15px;
                     font-family: Arial, sans-serif;
+                }
+
+                .signature .signature-name {
+                    margin-top: 35px;
+                }
+
+                .signature-spacing {
+                    margin-top: 25px;
                 }
             `}</style>
 
@@ -226,12 +254,12 @@ export default function Print({ permit }) {
                     <img
                         src="/images/tibiao_logo.png"
                         alt="Tibiao Logo"
-                        width="80"
+                        width="85"
                     />
                     <div className="header-text">
-                        <h6 className="mb-0">Republic of the Philippines</h6>
-                        <h6 className="mb-0">Province of Antique</h6>
-                        <h6 className="mb-0">MUNICIPALITY OF TIBIAO</h6>
+                        <h6>Republic of the Philippines</h6>
+                        <h6>Province of Antique</h6>
+                        <h6>MUNICIPALITY OF TIBIAO</h6>
                         <h6>
                             <u>Office of the Municipal Health Officer</u>
                         </h6>
@@ -239,7 +267,7 @@ export default function Print({ permit }) {
                     <img
                         src="/images/pilipinas_logo.png"
                         alt="Bagong Pilipinas"
-                        width="80"
+                        width="85"
                     />
                 </div>
 
@@ -276,7 +304,7 @@ export default function Print({ permit }) {
                     <p>
                         <strong>DATE ISSUED:</strong>{" "}
                         {permit?.issue_date
-                            ? formatDate(permit.issue_date) + ","
+                            ? formatDate(permit.issue_date)
                             : "__________"}
                     </p>
 
@@ -287,12 +315,12 @@ export default function Print({ permit }) {
                             style={{ fontWeight: "bold" }}
                         >
                             {permit?.expiry_date
-                                ? formatDate(permit.expiry_date) + ","
+                                ? formatDate(permit.expiry_date)
                                 : "__________"}
                         </span>
                     </p>
 
-                    <p style={{ marginTop: "20px" }}>
+                    <p style={{ marginTop: "22px" }}>
                         This permit is not transferable and will be revoked for
                         violation of the Sanitary Rules, Laws or Regulations of
                         P.D. 522 & P.D. 856 and Pertinent Local Ordinances.
@@ -304,17 +332,18 @@ export default function Print({ permit }) {
                     <p>
                         <strong>Recommending approval:</strong>
                     </p>
-                    <br></br>
-                    <p className="mb-0 mt-4">
+                    <p className="signature-name" style={{ marginTop: "38px" }}>
                         <strong>JULINETTE JOY D. SALVACION, RN</strong>
                     </p>
                     <p>Sanitation Inspector I</p>
-                    <br></br>
-                    <p className="mb-0 mt-5">
+
+                    <p
+                        className="signature-spacing"
+                        style={{ marginTop: "40px" }}
+                    >
                         <strong>Approved:</strong>
                     </p>
-                    <br></br>
-                    <p className="mb-0 mt-4">
+                    <p className="signature-name" style={{ marginTop: "38px" }}>
                         <strong>RUE JOANNA F. ESPAÑOLA, M.D.</strong>
                     </p>
                     <p>Municipal Health Officer</p>

@@ -6,7 +6,7 @@ import {
     Plus,
     FileText,
     Eye,
-    Edit,
+    Printer,
     Trash2,
     CheckCircle,
     XCircle,
@@ -391,12 +391,6 @@ export default function Index({ auth, permits, filters }) {
                                                                     ?.business_name
                                                             }
                                                         </div>
-                                                        <div className="text-sm text-gray-500">
-                                                            {
-                                                                permit.business
-                                                                    ?.owner_name
-                                                            }
-                                                        </div>
                                                     </td>
                                                     <td className="px-6 py-4 whitespace-nowrap">
                                                         {getPermitTypeBadge(
@@ -501,8 +495,8 @@ export default function Index({ auth, permits, filters }) {
                                                                 className="inline-flex items-center justify-center gap-1.5 w-full px-3 py-1.5 text-xs font-medium text-purple-700 bg-purple-50 hover:bg-purple-100 rounded-md transition-colors border border-purple-200"
                                                                 title="Print Permit"
                                                             >
-                                                                <Download className="w-3.5 h-3.5" />
-                                                                Print
+                                                                <Printer className="w-3.5 h-3.5" />
+                                                                Print Permit
                                                             </Link>
                                                         </div>
                                                     </td>

@@ -9,6 +9,7 @@ use App\Http\Controllers\InspectionController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\LabReportController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -28,27 +29,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{business}/edit', [BusinessController::class, 'edit'])->name('edit');
         Route::put('/{business}', [BusinessController::class, 'update'])->name('update');
         Route::delete('/{business}', [BusinessController::class, 'destroy'])->name('destroy');
-
-
         Route::get('/{business}', [BusinessController::class, 'show'])->name('show');
     });
 
     Route::prefix('lab-reports')->name('lab-reports.')->group(function () {
         Route::get('/', [LabReportController::class, 'index'])->name('index');
         Route::get('/inspection/queue', [LabReportController::class, 'inspectionQueue'])->name('inspection.queue');
-
         Route::get('/create', [LabReportController::class, 'create'])->name('create');
         Route::post('/', [LabReportController::class, 'store'])->name('store');
         Route::get('/{labReport}/edit', [LabReportController::class, 'edit'])->name('edit');
         Route::put('/{labReport}', [LabReportController::class, 'update'])->name('update');
         Route::delete('/{labReport}', [LabReportController::class, 'destroy'])->name('destroy');
         Route::post('/{labReport}/approve', [LabReportController::class, 'approve'])->name('approve');
-
         Route::get('/{labReport}', [LabReportController::class, 'show'])->name('show');
     });
 
     Route::prefix('permits')->name('permits.')->group(function () {
-
         Route::get('/', [PermitController::class, 'index'])->name('index');
         Route::get('/create', [PermitController::class, 'create'])->name('create');
         Route::post('/', [PermitController::class, 'store'])->name('store');
@@ -85,11 +81,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{notification}', [NotificationController::class, 'destroy'])->name('destroy');
     });
 
+    // Reports routes - moved here, inside the main auth group
+    Route::prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [ReportController::class, 'index'])->name('index');
+        Route::get('/business', [ReportController::class, 'businessReport'])->name('business');
+        Route::get('/inspection', [ReportController::class, 'inspectionReport'])->name('inspection');
+        Route::get('/permit', [ReportController::class, 'permitReport'])->name('permit');
+        Route::get('/lab', [ReportController::class, 'labReport'])->name('lab');
+        Route::get('/activity', [ReportController::class, 'activityReport'])->name('activity');
+        Route::get('/barangay', [ReportController::class, 'barangayReport'])->name('barangay');
+        Route::get('/trends', [ReportController::class, 'monthlyTrends'])->name('trends');
+        Route::post('/export', [ReportController::class, 'export'])->name('export');
+        Route::post('/save', [ReportController::class, 'saveReport'])->name('save');
+    });
+
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('/', [SettingsController::class, 'index'])->name('index');
         Route::put('/', [SettingsController::class, 'update'])->name('update');
     });
-
 
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::post('/verify', [ProfileVerificationController::class, 'verify'])->name('verify');
@@ -98,6 +107,5 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::patch('/', [ProfileController::class, 'update'])->name('update');
     });
 });
-
 
 require __DIR__ . '/auth.php';

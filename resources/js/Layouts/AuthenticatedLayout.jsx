@@ -33,23 +33,22 @@ export default function AuthenticatedLayout({ user, children }) {
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const { url } = usePage();
 
-    // Check if user is Inspector (Admin role)
+    // Check user roles
     const isInspector = user.role === "Admin";
+    const isAssistant = user.role === "Assistant";
 
-    // Base navigation items (available to all users)
-    const baseNavigation = [
+    // Assistant navigation - only Dashboard
+    const assistantNavigation = [
         {
             name: "Dashboard",
             href: route("dashboard"),
             icon: LayoutDashboard,
             current: url === "/dashboard",
         },
-        {
-            name: "Businesses",
-            href: route("businesses.index"),
-            icon: Building2,
-            current: url.startsWith("/businesses"),
-        },
+    ];
+
+    // Lab Staff navigation - only Lab Reports
+    const labStaffNavigation = [
         {
             name: "Lab Reports",
             href: route("lab-reports.index"),
@@ -58,8 +57,19 @@ export default function AuthenticatedLayout({ user, children }) {
         },
     ];
 
-    // Inspector-only navigation items
     const inspectorNavigation = [
+        {
+            name: "Dashboard",
+            href: route("dashboard"),
+            icon: LayoutDashboard,
+            current: url === "/dashboard",
+        },
+        {
+            name: "Applicants",
+            href: route("businesses.index"),
+            icon: Building2,
+            current: url.startsWith("/businesses"),
+        },
         {
             name: "Permits",
             href: route("permits.index"),
@@ -72,12 +82,27 @@ export default function AuthenticatedLayout({ user, children }) {
             icon: ClipboardCheck,
             current: url.startsWith("/inspections"),
         },
+        {
+            name: "Lab Reports",
+            href: route("lab-reports.index"),
+            icon: FlaskConical,
+            current: url.startsWith("/lab-reports"),
+        },
+        {
+            name: "Reports",
+            href: route("reports.index"),
+            icon: BarChart3,
+            current:
+                url.startsWith("/reports") && !url.startsWith("/lab-reports"),
+        },
     ];
 
-    // Combine navigation based on user role
-    const navigation = isInspector
-        ? [...baseNavigation, ...inspectorNavigation]
-        : baseNavigation;
+    // Determine navigation based on user role
+    const navigation = isAssistant
+        ? assistantNavigation
+        : isInspector
+        ? inspectorNavigation
+        : labStaffNavigation;
 
     // Fetch notifications
     const fetchNotifications = async () => {

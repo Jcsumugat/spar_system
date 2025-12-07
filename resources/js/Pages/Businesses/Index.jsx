@@ -159,7 +159,7 @@ export default function Index({ auth, businesses, barangays, filters }) {
                                 className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                             >
                                 <Plus className="w-5 h-5 mr-2" />
-                                Register Business
+                                New Applicant
                             </Link>
                         </div>
                     </div>

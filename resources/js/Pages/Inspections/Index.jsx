@@ -2,7 +2,15 @@ import { useState } from "react";
 import { Head, Link, router } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import RoleButton from "@/Components/RoleButton";
-import { Search, Plus, Eye, Filter, ClipboardCheck } from "lucide-react";
+import {
+    Search,
+    Plus,
+    Eye,
+    Filter,
+    ClipboardCheck,
+    Download,
+    Printer,
+} from "lucide-react";
 
 export default function Index({ auth, inspections, filters }) {
     const [search, setSearch] = useState(filters.search || "");
@@ -49,8 +57,8 @@ export default function Index({ auth, inspections, filters }) {
 
     const getResultBadge = (result) => {
         const styles = {
-            Approved: "bg-green-100 text-green-800 border-green-200",
-            Rejected: "bg-red-100 text-red-800 border-red-200",
+            Passed: "bg-green-100 text-green-800 border-green-200",
+            Failed: "bg-red-100 text-red-800 border-red-200",
             Pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
             "Passed with Conditions":
                 "bg-blue-100 text-blue-800 border-blue-200",
@@ -94,6 +102,15 @@ export default function Index({ auth, inspections, filters }) {
             month: "short",
             day: "numeric",
         });
+    };
+
+    // Check if inspection has a permit to print (passed inspections with permits)
+    const canPrintPermit = (inspection) => {
+        return (
+            (inspection.result === "Passed" ||
+                inspection.result === "Passed with Conditions") &&
+            inspection.permit_id
+        );
     };
 
     return (
@@ -348,19 +365,41 @@ export default function Index({ auth, inspections, filters }) {
                                                         inspection.result
                                                     )}
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                                    <RoleButton
-                                                        href={route(
-                                                            "inspections.show",
-                                                            inspection.id
-                                                        )}
-                                                        allowedRoles={["Admin"]}
-                                                        disabledMessage="Only administrators can perform inspections"
-                                                        className="inline-flex items-center gap-2 px-4 py-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors"
-                                                    >
-                                                        <Eye className="w-4 h-4" />
-                                                        Inspect
-                                                    </RoleButton>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                    <div className="flex flex-col items-stretch gap-2 min-w-[120px]">
+                                                        {/* View/Inspect Button */}
+                                                        <RoleButton
+                                                            href={route(
+                                                                "inspections.show",
+                                                                inspection.id
+                                                            )}
+                                                            allowedRoles={[
+                                                                "Admin",
+                                                            ]}
+                                                            disabledMessage="Only administrators can perform inspections"
+                                                            className="inline-flex items-center justify-center gap-2 px-4 py-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200"
+                                                        >
+                                                            <Eye className="w-4 h-4" />
+                                                            Inspect
+                                                        </RoleButton>
+
+                                                        {/* Print Permit Button - Only for Approved with permit_id */}
+                                                        {inspection.result ===
+                                                            "Approved" &&
+                                                            inspection.permit_id && (
+                                                                <Link
+                                                                    href={route(
+                                                                        "permits.print",
+                                                                        inspection.permit_id
+                                                                    )}
+                                                                    className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-colors border border-green-200"
+                                                                    title="Print Permit"
+                                                                >
+                                                                    <Printer className="w-4 h-4" />
+                                                                    Print Permit
+                                                                </Link>
+                                                            )}
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))

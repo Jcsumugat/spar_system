@@ -116,4 +116,14 @@ class Business extends Model
             ->where('status', 'pending')
             ->exists();
     }
+    // In Business.php
+    public function latestPermit()
+    {
+        return $this->hasOne(SanitaryPermit::class)->latest();
+    }
+
+    public function latestInspection()
+    {
+        return $this->hasOne(Inspection::class)->latest();
+    }
 }

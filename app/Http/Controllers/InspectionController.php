@@ -37,7 +37,9 @@ class InspectionController extends Controller
             });
         }
 
-        $inspections = $query->latest('inspection_date')->paginate(15);
+        $inspections = $query
+            ->latest('inspection_date')
+            ->paginate(15);
 
         return Inertia::render('Inspections/Index', [
             'inspections' => $inspections,
