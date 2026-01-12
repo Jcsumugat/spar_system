@@ -36,7 +36,9 @@ class ReportController extends Controller
 
     public function businessReport(Request $request)
     {
-        $query = Business::query();
+        $query = Business::with(['sanitaryPermits' => function ($q) {
+            $q->latest('issue_date'); // Get the most recent permit
+        }]);
 
         if ($request->filled('business_type')) {
             $query->where('business_type', $request->business_type);
@@ -58,20 +60,47 @@ class ReportController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $businesses = $query->latest()->get();
+        $businesses = $query->oldest('created_at')->get();
+
+        // Map businesses to include their latest permit status
+        $businessesData = $businesses->map(function ($business) {
+            $latestPermit = $business->sanitaryPermits->first(); // Get the most recent permit
+
+            return [
+                'id' => $business->id,
+                'business_name' => $business->business_name,
+                'owner_name' => $business->owner_name,
+                'business_type' => $business->business_type,
+                'address' => $business->address,
+                'barangay' => $business->barangay,
+                'contact_number' => $business->contact_number,
+                'email' => $business->email,
+                'establishment_category' => $business->establishment_category,
+                'number_of_employees' => $business->number_of_employees,
+                'permit_status' => $latestPermit ? $latestPermit->status : 'No Permit',
+                'created_at' => $business->created_at,
+            ];
+        });
+
+        // Count active permits from sanitary_permits table
+        $businessIds = $businesses->pluck('id');
+        $activePermitsCount = \App\Models\SanitaryPermit::whereIn('business_id', $businessIds)
+            ->where('status', 'Active')
+            ->count();
 
         return response()->json([
-            'data' => $businesses,
+            'data' => $businessesData,
             'summary' => [
                 'total' => $businesses->count(),
                 'food_establishments' => $businesses->where('business_type', 'Food Establishment')->count(),
                 'non_food_establishments' => $businesses->where('business_type', 'Non-Food Establishment')->count(),
-                'active_permits' => $businesses->where('permit_status', 'approved')->count(),
-                'pending' => $businesses->where('permit_status', 'pending')->count(),
+                'active_permits' => $activePermitsCount,
+                'no_permit' => $businesses->count() - $activePermitsCount,
             ]
         ]);
     }
 
+    // Update the inspectionReport method - remove overall_score from data and average_score from summary
     public function inspectionReport(Request $request)
     {
         $query = Inspection::with(['business', 'inspector']);
@@ -102,9 +131,9 @@ class ReportController extends Controller
             });
         }
 
-        $inspections = $query->latest('inspection_date')->get();
+        $inspections = $query->oldest('inspection_date')->get();
 
-        // Map the data to include flattened relationship fields
+        // Map the data to include flattened relationship fields (removed overall_score)
         $inspectionsData = $inspections->map(function ($inspection) {
             return [
                 'id' => $inspection->id,
@@ -117,7 +146,6 @@ class ReportController extends Controller
                 'inspector_name' => $inspection->inspector->name ?? 'N/A',
                 'inspection_type' => $inspection->inspection_type,
                 'result' => $inspection->result,
-                'overall_score' => $inspection->overall_score,
                 'findings' => $inspection->findings,
                 'recommendations' => $inspection->recommendations,
                 'created_at' => $inspection->created_at,
@@ -132,9 +160,101 @@ class ReportController extends Controller
                 'approved' => $inspections->where('result', 'Approved')->count(),
                 'denied' => $inspections->where('result', 'Denied')->count(),
                 'pending' => $inspections->where('result', 'Pending')->count(),
-                'average_score' => round($inspections->where('overall_score', '>', 0)->avg('overall_score'), 2),
             ]
         ]);
+    }
+
+    // Update getColumnHeaders method - remove Score column
+    private function getColumnHeaders($type)
+    {
+        switch ($type) {
+            case 'business':
+                return ['#', 'Business Name', 'Owner Name', 'Type', 'Address', 'Barangay', 'Contact', 'Email', 'Category', 'Employees', 'Status', 'Created At'];
+
+            case 'inspection':
+                return ['Inspection Number', 'Business', 'Inspector', 'Date', 'Type', 'Result', 'Created At'];
+
+            case 'permit':
+                return ['Permit Number', 'Business', 'Type', 'Issue Date', 'Expiry Date', 'Status', 'Created At'];
+
+            case 'lab':
+                return ['#', 'Business', 'Application Type', 'Submitted By', 'Status', 'Result', 'Submitted At'];
+
+            case 'activity':
+                return ['#', 'User', 'Action', 'Model', 'Description', 'IP Address', 'Created At'];
+
+            default:
+                return ['Data'];
+        }
+    }
+
+    // Update formatRowData method - remove overall_score field
+    private function formatRowData($row, $type, $index = null)
+    {
+        switch ($type) {
+            case 'business':
+                return [
+                    $index !== null ? $index + 1 : $row->id,
+                    $row->business_name,
+                    $row->owner_name,
+                    $row->business_type,
+                    $row->address,
+                    $row->barangay,
+                    $row->contact_number,
+                    $row->email ?? 'N/A',
+                    $row->establishment_category,
+                    $row->number_of_employees,
+                    $row->permit_status,
+                    $row->created_at,
+                ];
+
+            case 'inspection':
+                return [
+                    $row->inspection_number,
+                    $row->business->business_name ?? 'N/A',
+                    $row->inspector->name ?? 'N/A',
+                    $row->inspection_date ? \Carbon\Carbon::parse($row->inspection_date)->format('Y-m-d') : 'N/A',
+                    $row->inspection_type,
+                    $row->result,
+                    $row->created_at ? \Carbon\Carbon::parse($row->created_at)->format('Y-m-d H:i:s') : 'N/A',
+                ];
+
+            case 'permit':
+                return [
+                    $row->permit_number,
+                    $row->business->business_name ?? 'N/A',
+                    $row->permit_type,
+                    $row->issue_date,
+                    $row->expiry_date,
+                    $row->status,
+                    $row->created_at,
+                ];
+
+            case 'lab':
+                return [
+                    $index !== null ? $index + 1 : $row->id,
+                    $row->business->business_name ?? 'N/A',
+                    $row->application_type,
+                    $row->submittedBy->name ?? 'N/A',
+                    $row->status,
+                    $row->overall_result ?? 'N/A',
+                    $row->submitted_at,
+                ];
+
+            case 'activity':
+                return [
+                    $index !== null ? $index + 1 : $row->id,
+                    $row->user->name ?? 'System',
+                    $row->action,
+                    $row->model_type,
+                    $row->description,
+                    $row->ip_address ?? 'N/A',
+                    $row->created_at,
+                ];
+
+            default:
+                return [$row];
+        }
     }
 
     public function permitReport(Request $request)
@@ -168,7 +288,7 @@ class ReportController extends Controller
             });
         }
 
-        $permits = $query->latest('issue_date')->get();
+        $permits = $query->oldest('issue_date')->get();
 
         // Map the data to include flattened relationship fields
         $permitsData = $permits->map(function ($permit) {
@@ -232,7 +352,7 @@ class ReportController extends Controller
             });
         }
 
-        $reports = $query->latest('submitted_at')->get();
+        $reports = $query->oldest('submitted_at')->get();
         $totalReports = $reports->count();
 
         // Map the data to include flattened relationship fields
@@ -298,7 +418,7 @@ class ReportController extends Controller
             });
         }
 
-        $activities = $query->latest()->limit(100)->get();
+        $activities = $query->oldest()->limit(100)->get();
 
         // Map the data to include flattened relationship fields
         $activitiesData = $activities->map(function ($activity) {
@@ -412,17 +532,66 @@ class ReportController extends Controller
 
         switch ($type) {
             case 'business':
-                $query = Business::query();
+                $query = Business::with(['sanitaryPermits' => function ($q) {
+                    $q->latest('issue_date')->limit(1);
+                }]);
+
+                if (isset($filters['business_type'])) {
+                    $query->where('business_type', $filters['business_type']);
+                }
+
+                if (isset($filters['barangay'])) {
+                    $query->where('barangay', $filters['barangay']);
+                }
+
                 if (isset($filters['date_from'])) {
                     $query->whereDate('created_at', '>=', $filters['date_from']);
                 }
+
                 if (isset($filters['date_to'])) {
                     $query->whereDate('created_at', '<=', $filters['date_to']);
                 }
-                return $query->get();
+
+                $businesses = $query->oldest('created_at')->get();
+
+                // Map businesses to include their latest permit status (same as businessReport method)
+                return $businesses->map(function ($business) {
+                    $latestPermit = $business->sanitaryPermits->first();
+
+                    $permitStatus = 'No Permit';
+                    if ($latestPermit) {
+                        $permitStatus = $latestPermit->status;
+                    }
+
+                    // Create a stdClass object with the mapped data
+                    $mapped = new \stdClass();
+                    $mapped->id = $business->id;
+                    $mapped->business_name = $business->business_name;
+                    $mapped->owner_name = $business->owner_name;
+                    $mapped->business_type = $business->business_type;
+                    $mapped->address = $business->address;
+                    $mapped->barangay = $business->barangay;
+                    $mapped->contact_number = $business->contact_number;
+                    $mapped->email = $business->email;
+                    $mapped->establishment_category = $business->establishment_category;
+                    $mapped->number_of_employees = $business->number_of_employees;
+                    $mapped->permit_status = $permitStatus;
+                    $mapped->created_at = $business->created_at;
+
+                    return $mapped;
+                });
 
             case 'inspection':
                 $query = Inspection::with(['business', 'inspector']);
+                if (isset($filters['result'])) {
+                    $query->where('result', $filters['result']);
+                }
+                if (isset($filters['inspection_type'])) {
+                    $query->where('inspection_type', $filters['inspection_type']);
+                }
+                if (isset($filters['inspector_id'])) {
+                    $query->where('inspector_id', $filters['inspector_id']);
+                }
                 if (isset($filters['date_from'])) {
                     $query->whereDate('inspection_date', '>=', $filters['date_from']);
                 }
@@ -434,7 +603,7 @@ class ReportController extends Controller
                         $q->where('business_name', 'like', '%' . $filters['search'] . '%');
                     });
                 }
-                return $query->latest('inspection_date')->get();
+                return $query->oldest('inspection_date')->get();
 
             case 'permit':
                 $query = SanitaryPermit::with(['business']);
@@ -541,99 +710,6 @@ class ReportController extends Controller
         return response($html, 200, $headers);
     }
 
-    private function getColumnHeaders($type)
-    {
-        switch ($type) {
-            case 'business':
-                return ['ID', 'Business Name', 'Owner Name', 'Type', 'Address', 'Barangay', 'Contact', 'Email', 'Category', 'Employees', 'Status', 'Created At'];
-
-            case 'inspection':
-                return ['ID', 'Inspection Number', 'Business', 'Inspector', 'Date', 'Type', 'Result', 'Score', 'Created At'];
-
-            case 'permit':
-                return ['ID', 'Permit Number', 'Business', 'Type', 'Issue Date', 'Expiry Date', 'Status', 'Created At'];
-
-            case 'lab':
-                return ['ID', 'Business', 'Application Type', 'Submitted By', 'Status', 'Result', 'Submitted At'];
-
-            case 'activity':
-                return ['ID', 'User', 'Action', 'Model', 'Description', 'IP Address', 'Created At'];
-
-            default:
-                return ['Data'];
-        }
-    }
-
-    private function formatRowData($row, $type)
-    {
-        switch ($type) {
-            case 'business':
-                return [
-                    $row->id,
-                    $row->business_name,
-                    $row->owner_name,
-                    $row->business_type,
-                    $row->address,
-                    $row->barangay,
-                    $row->contact_number,
-                    $row->email ?? 'N/A',
-                    $row->establishment_category,
-                    $row->number_of_employees,
-                    $row->permit_status,
-                    $row->created_at,
-                ];
-
-            case 'inspection':
-                return [
-                    $row->id,
-                    $row->inspection_number,
-                    $row->business->business_name ?? 'N/A',
-                    $row->inspector->name ?? 'N/A',
-                    $row->inspection_date ? \Carbon\Carbon::parse($row->inspection_date)->format('Y-m-d') : 'N/A',
-                    $row->inspection_type,
-                    $row->result,
-                    $row->overall_score ?? 'N/A',
-                    $row->created_at ? \Carbon\Carbon::parse($row->created_at)->format('Y-m-d H:i:s') : 'N/A',
-                ];
-
-            case 'permit':
-                return [
-                    $row->id,
-                    $row->permit_number,
-                    $row->business->business_name ?? 'N/A',
-                    $row->permit_type,
-                    $row->issue_date,
-                    $row->expiry_date,
-                    $row->status,
-                    $row->created_at,
-                ];
-
-            case 'lab':
-                return [
-                    $row->id,
-                    $row->business->business_name ?? 'N/A',
-                    $row->application_type,
-                    $row->submittedBy->name ?? 'N/A',
-                    $row->status,
-                    $row->overall_result ?? 'N/A',
-                    $row->submitted_at,
-                ];
-
-            case 'activity':
-                return [
-                    $row->id,
-                    $row->user->name ?? 'System',
-                    $row->action,
-                    $row->model_type,
-                    $row->description,
-                    $row->ip_address ?? 'N/A',
-                    $row->created_at,
-                ];
-
-            default:
-                return [$row];
-        }
-    }
 
     private function generatePDFHTML($data, $type)
     {
@@ -673,9 +749,9 @@ class ReportController extends Controller
 
         $html .= '</tr></thead><tbody>';
 
-        foreach ($data as $row) {
+        foreach ($data as $index => $row) {
             $html .= '<tr>';
-            foreach ($this->formatRowData($row, $type) as $cell) {
+            foreach ($this->formatRowData($row, $type, $index) as $cell) {
                 $html .= '<td>' . htmlspecialchars($cell) . '</td>';
             }
             $html .= '</tr>';
@@ -722,7 +798,7 @@ class ReportController extends Controller
     {
         return [
             'total_businesses' => Business::count(),
-            'active_permits' => SanitaryPermit::where('status', 'Active')->count(),
+            'active_permits' => SanitaryPermit::where('status', 'active')->count(),
             'pending_inspections' => Inspection::where('result', 'Pending')->count(),
             'pending_lab_reports' => LabReport::where('status', 'pending')->count(),
             'expiring_permits' => SanitaryPermit::where('status', 'Expiring Soon')->count(),

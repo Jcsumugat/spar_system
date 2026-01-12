@@ -36,11 +36,11 @@ export default function Show({ auth, business }) {
                     {/* Back Button */}
                     <div className="mb-6">
                         <Link
-                            href="/dashboard"
+                            href="/lab-reports"
                             className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
                         >
                             <ArrowLeft className="w-4 h-4" />
-                            <span>Back to Dashboard</span>
+                            <span>Back to Lab Reports</span>
                         </Link>
                     </div>
 

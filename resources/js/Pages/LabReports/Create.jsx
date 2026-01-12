@@ -13,6 +13,9 @@ import {
     Receipt,
     FileCheck,
     Calendar,
+    CheckCircle,
+    XCircle,
+    Clock,
 } from "lucide-react";
 
 function BusinessSearchDropdown({
@@ -52,6 +55,54 @@ function BusinessSearchDropdown({
             document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    const getLabReportStatusBadge = (business) => {
+        const status = business.latest_lab_report_status;
+        const result = business.latest_lab_report_result;
+
+        if (!status) {
+            return (
+                <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-700 inline-flex items-center gap-1">
+                    <Info className="w-3 h-3" />
+                    No Lab Report
+                </span>
+            );
+        }
+
+        if (status === "pending") {
+            return (
+                <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-yellow-100 text-yellow-700 inline-flex items-center gap-1">
+                    <Clock className="w-3 h-3" />
+                    Pending Review
+                </span>
+            );
+        }
+
+        if (status === "approved") {
+            return (
+                <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700 inline-flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" />
+                    Approved{" "}
+                    {result === "pass"
+                        ? "(Pass)"
+                        : result === "fail"
+                        ? "(Fail)"
+                        : ""}
+                </span>
+            );
+        }
+
+        if (status === "rejected") {
+            return (
+                <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700 inline-flex items-center gap-1">
+                    <XCircle className="w-3 h-3" />
+                    Rejected
+                </span>
+            );
+        }
+
+        return null;
+    };
+
     return (
         <div className="relative" ref={dropdownRef}>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -67,13 +118,16 @@ function BusinessSearchDropdown({
             >
                 {selectedBusiness ? (
                     <div className="flex items-center justify-between">
-                        <div>
+                        <div className="flex-1 min-w-0">
                             <span className="font-medium text-gray-900">
                                 {selectedBusiness.business_name}
                             </span>
                             <span className="text-gray-500 text-sm ml-2">
                                 - {selectedBusiness.owner_name}
                             </span>
+                            <div className="mt-1">
+                                {getLabReportStatusBadge(selectedBusiness)}
+                            </div>
                         </div>
                         <button
                             type="button"
@@ -82,7 +136,7 @@ function BusinessSearchDropdown({
                                 onSelect("");
                                 setSearchTerm("");
                             }}
-                            className="p-1 hover:bg-gray-100 rounded transition-colors"
+                            className="ml-2 p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
                         >
                             <X className="w-4 h-4 text-gray-400 hover:text-gray-600" />
                         </button>
@@ -140,23 +194,9 @@ function BusinessSearchDropdown({
                                     </div>
                                     <div className="flex items-center gap-2 mt-1">
                                         <span className="text-xs text-gray-500">
-                                            Status:
+                                            Lab Report:
                                         </span>
-                                        <span
-                                            className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                                                business.permit_status ===
-                                                "approved"
-                                                    ? "bg-green-100 text-green-700"
-                                                    : business.permit_status ===
-                                                      "pending"
-                                                    ? "bg-yellow-100 text-yellow-700"
-                                                    : "bg-gray-100 text-gray-700"
-                                            }`}
-                                        >
-                                            {business.permit_status
-                                                .replace("_", " ")
-                                                .toUpperCase()}
-                                        </span>
+                                        {getLabReportStatusBadge(business)}
                                     </div>
                                 </div>
                             ))
@@ -484,7 +524,7 @@ export default function Create({
                                         </div>
                                         <div>
                                             <span className="font-medium text-blue-900">
-                                                Current Status:
+                                                Permit Status:
                                             </span>
                                             <p className="text-blue-800">
                                                 {selectedBusiness.permit_status
@@ -528,7 +568,7 @@ export default function Create({
                         />
 
                         <DocumentUploadSection
-                            title="X-Ray / Sputum Examination"
+                            title="X-Ray Examination"
                             icon={FileText}
                             field="xray_sputum"
                             data={data}
@@ -539,7 +579,7 @@ export default function Create({
                         />
 
                         <DocumentUploadSection
-                            title="Payment Receipt"
+                            title="Sputum Examination"
                             icon={Receipt}
                             field="receipt"
                             data={data}

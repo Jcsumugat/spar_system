@@ -310,7 +310,7 @@ export default function Edit({ auth, labReport, businesses }) {
                                                 onChange={(e) =>
                                                     handleFileChange(
                                                         e,
-                                                        "xray_sputum_photo"
+                                                        "xray_photo"
                                                     )
                                                 }
                                                 className="hidden"
@@ -332,7 +332,7 @@ export default function Edit({ auth, labReport, businesses }) {
                                         value={data.xray_sputum_remarks}
                                         onChange={(e) =>
                                             setData(
-                                                "xray_sputum_remarks",
+                                                "xray_remarks",
                                                 e.target.value
                                             )
                                         }

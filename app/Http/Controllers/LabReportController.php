@@ -30,17 +30,32 @@ class LabReportController extends Controller
 
     public function create(Request $request)
     {
+
         $businesses = Business::active()
-            ->whereDoesntHave('labReports', function ($query) {
-                $query->whereIn('status', ['pending', 'approved']);
-            })
+            ->with(['latestLabReport:id,business_id,status,overall_result,submitted_at'])
             ->get(['id', 'business_name', 'owner_name', 'permit_status']);
+
+        $businesses = $businesses->map(function ($business) {
+            $latestLabReport = $business->latestLabReport;
+            $business->latest_lab_report_status = $latestLabReport ? $latestLabReport->status : null;
+            $business->latest_lab_report_result = $latestLabReport ? $latestLabReport->overall_result : null;
+            $business->latest_lab_report_date = $latestLabReport ? $latestLabReport->submitted_at : null;
+            unset($business->latestLabReport);
+            return $business;
+        });
 
         $selectedBusinessId = $request->query('business_id');
 
         $selectedBusiness = null;
         if ($selectedBusinessId) {
-            $selectedBusiness = Business::find($selectedBusinessId);
+            $selectedBusiness = Business::with(['latestLabReport:id,business_id,status,overall_result,submitted_at'])
+                ->find($selectedBusinessId);
+
+            if ($selectedBusiness && $selectedBusiness->latestLabReport) {
+                $selectedBusiness->latest_lab_report_status = $selectedBusiness->latestLabReport->status;
+                $selectedBusiness->latest_lab_report_result = $selectedBusiness->latestLabReport->overall_result;
+                $selectedBusiness->latest_lab_report_date = $selectedBusiness->latestLabReport->submitted_at;
+            }
         }
 
         return Inertia::render('LabReports/Create', [
@@ -106,13 +121,25 @@ class LabReportController extends Controller
             // Create inspection for both new and renewal applications
             $inspection = $this->createInspectionForLabReport($labReport);
 
-            $inspectors = User::where('role', 'admin')->get();
+            // CHANGED: Notify Lab Staff instead of Admins
+            $labStaff = User::whereIn('role', ['Lab Staff', 'Lab Assistant'])
+                ->where('is_active', 1)
+                ->get();
 
-            foreach ($inspectors as $inspector) {
+            foreach ($labStaff as $staff) {
                 NotificationHelper::labReportSubmitted(
-                    $inspector->id,
+                    $staff->id,
                     $business,
                     $labReport,
+                    null
+                );
+            }
+
+            // Optionally notify the assigned inspector about the scheduled inspection
+            if ($inspection && $inspection->inspector_id) {
+                NotificationHelper::inspectionDue(
+                    $inspection->inspector_id,
+                    $business,
                     $inspection
                 );
             }

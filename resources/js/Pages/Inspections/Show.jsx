@@ -253,8 +253,8 @@ export default function Show({ auth, inspection }) {
 
     const documentLabels = {
         fecalysis: "Fecalysis Examination Result",
-        xray_sputum: "X-Ray / Sputum Examination",
-        receipt: "Payment Receipt",
+        xray_sputum: "X-Ray Examination",
+        receipt: "Sputum Examination",
         dti: "DTI Business Registration",
     };
 

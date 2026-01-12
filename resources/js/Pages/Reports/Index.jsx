@@ -133,11 +133,12 @@ export default function Reports({
         setShowFilters(false);
     };
 
+    // Update the getTableColumns function - remove Score column from inspection
     const getTableColumns = () => {
         switch (activeTab) {
             case "business":
                 return [
-                    { key: "id", label: "ID", width: "w-20" },
+                    { key: "id", label: "#", width: "w-20" },
                     {
                         key: "business_name",
                         label: "Business Name",
@@ -177,7 +178,7 @@ export default function Reports({
                 ];
             case "lab":
                 return [
-                    { key: "id", label: "ID", width: "w-20" },
+                    { key: "id", label: "#", width: "w-20" },
                     { key: "business_name", label: "Business", width: "w-48" },
                     { key: "application_type", label: "Type", width: "w-24" },
                     {
@@ -191,7 +192,7 @@ export default function Reports({
                 ];
             case "activity":
                 return [
-                    { key: "id", label: "ID", width: "w-20" },
+                    { key: "id", label: "#", width: "w-20" },
                     { key: "user_name", label: "User", width: "w-40" },
                     { key: "action", label: "Action", width: "w-28" },
                     { key: "model_type", label: "Module", width: "w-32" },
@@ -392,7 +393,6 @@ export default function Reports({
             expiring_permits: 0,
             ...stats,
         };
-
         return (
             <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -657,20 +657,6 @@ export default function Reports({
                             <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
                                 <div className="py-1">
                                     <button
-                                        onClick={() => exportReport("csv")}
-                                        className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 transition-colors flex items-center gap-3"
-                                    >
-                                        <FileText className="w-4 h-4 text-green-600" />
-                                        <div>
-                                            <div className="font-medium">
-                                                Export as CSV
-                                            </div>
-                                            <div className="text-xs text-gray-500">
-                                                Comma-separated values
-                                            </div>
-                                        </div>
-                                    </button>
-                                    <button
                                         onClick={() => exportReport("excel")}
                                         className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 transition-colors flex items-center gap-3"
                                     >
@@ -802,7 +788,13 @@ export default function Reports({
                                             key={column.key}
                                             className="px-6 py-4 whitespace-nowrap"
                                         >
-                                            {renderCellValue(item, column)}
+                                            {column.key === "id" ? (
+                                                <span className="text-sm text-gray-900">
+                                                    {index + 1}
+                                                </span>
+                                            ) : (
+                                                renderCellValue(item, column)
+                                            )}
                                         </td>
                                     ))}
                                 </tr>
@@ -840,7 +832,7 @@ export default function Reports({
                                 Reports & Analytics
                             </h1>
                         </div>
-                        <p className="text-gray-600 ml-14">
+                        <p className="text-gray-600 ml-1">
                             Comprehensive reporting and data analysis dashboard
                         </p>
                     </div>

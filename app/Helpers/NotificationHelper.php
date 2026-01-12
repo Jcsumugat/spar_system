@@ -83,6 +83,35 @@ class NotificationHelper
         );
     }
 
+    // Alternative: If you want to send to ALL lab staff at once
+    public static function notifyLabStaffAboutReport($business, $labReport, $inspection = null)
+    {
+        // Get all users with 'Lab Staff' or 'Lab Assistant' role
+        $labStaff = \App\Models\User::whereIn('role', ['Lab Staff', 'Lab Assistant'])->get();
+
+        $applicationType = ucfirst($labReport->application_type);
+
+        $data = [
+            'business_id' => $business->id,
+            'lab_report_id' => $labReport->id,
+            'application_type' => $labReport->application_type,
+        ];
+
+        if ($inspection) {
+            $data['inspection_id'] = $inspection->id;
+        }
+
+        foreach ($labStaff as $staff) {
+            self::create(
+                $staff->id,
+                'lab_report_submitted',
+                'New Lab Report Submitted',
+                "{$applicationType} application lab report from {$business->business_name} requires review",
+                $data
+            );
+        }
+    }
+
     public static function businessRegistered($userId, $business)
     {
         return self::create(

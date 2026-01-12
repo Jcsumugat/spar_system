@@ -35,19 +35,22 @@ export default function AuthenticatedLayout({ user, children }) {
 
     // Check user roles
     const isInspector = user.role === "Admin";
-    const isAssistant = user.role === "Assistant";
+    const isLabAssistant =
+        user.role === "Staff" && user.position === "Lab Assistant";
+    const isLabStaff =
+        user.role === "Staff" && user.position !== "Lab Assistant";
 
-    // Assistant navigation - only Dashboard
-    const assistantNavigation = [
+    // Lab Assistant navigation - only Lab Reports
+    const labAssistantNavigation = [
         {
-            name: "Dashboard",
-            href: route("dashboard"),
-            icon: LayoutDashboard,
-            current: url === "/dashboard",
+            name: "Lab Reports",
+            href: route("lab-reports.index"),
+            icon: FlaskConical,
+            current: url.startsWith("/lab-reports"),
         },
     ];
 
-    // Lab Staff navigation - only Lab Reports
+    // Other Lab Staff navigation - only Lab Reports
     const labStaffNavigation = [
         {
             name: "Lab Reports",
@@ -70,12 +73,12 @@ export default function AuthenticatedLayout({ user, children }) {
             icon: Building2,
             current: url.startsWith("/businesses"),
         },
-        {
-            name: "Permits",
-            href: route("permits.index"),
-            icon: FileText,
-            current: url.startsWith("/permits"),
-        },
+        // {
+        //     name: "Permits",
+        //     href: route("permits.index"),
+        //    icon: FileText,
+        //    current: url.startsWith("/permits"),
+        // },
         {
             name: "Inspections",
             href: route("inspections.index"),
@@ -98,8 +101,8 @@ export default function AuthenticatedLayout({ user, children }) {
     ];
 
     // Determine navigation based on user role
-    const navigation = isAssistant
-        ? assistantNavigation
+    const navigation = isLabAssistant
+        ? labAssistantNavigation
         : isInspector
         ? inspectorNavigation
         : labStaffNavigation;
@@ -495,6 +498,40 @@ export default function AuthenticatedLayout({ user, children }) {
                                                                             );
                                                                         }
                                                                     }
+                                                                    // Handle business registered - check user role
+                                                                    else if (
+                                                                        notification.type ===
+                                                                        "business_registered"
+                                                                    ) {
+                                                                        // If user role is assistant, redirect to lab reports
+                                                                        if (
+                                                                            notification
+                                                                                .data
+                                                                                .user_role ===
+                                                                            "assistant"
+                                                                        ) {
+                                                                            router.visit(
+                                                                                route(
+                                                                                    "lab-reports.index"
+                                                                                )
+                                                                            );
+                                                                        }
+                                                                        // Otherwise redirect to business details (for inspectors)
+                                                                        else if (
+                                                                            notification
+                                                                                .data
+                                                                                .business_id
+                                                                        ) {
+                                                                            router.visit(
+                                                                                route(
+                                                                                    "businesses.show",
+                                                                                    notification
+                                                                                        .data
+                                                                                        .business_id
+                                                                                )
+                                                                            );
+                                                                        }
+                                                                    }
                                                                     // Handle inspection progress saved
                                                                     else if (
                                                                         notification.type ===
@@ -560,23 +597,6 @@ export default function AuthenticatedLayout({ user, children }) {
                                                                                 notification
                                                                                     .data
                                                                                     .lab_report_id
-                                                                            )
-                                                                        );
-                                                                    }
-                                                                    // Handle business registered
-                                                                    else if (
-                                                                        notification
-                                                                            .data
-                                                                            .business_id &&
-                                                                        notification.type ===
-                                                                            "business_registered"
-                                                                    ) {
-                                                                        router.visit(
-                                                                            route(
-                                                                                "businesses.show",
-                                                                                notification
-                                                                                    .data
-                                                                                    .business_id
                                                                             )
                                                                         );
                                                                     }

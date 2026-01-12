@@ -51,7 +51,6 @@ class BusinessController extends Controller
     {
         return Inertia::render('Businesses/Create');
     }
-
     public function store(Request $request)
     {
         // Log the incoming request data for debugging
@@ -79,20 +78,23 @@ class BusinessController extends Controller
                 'Created business ' . $business->business_name
             );
 
-            // Send notifications to all Lab Inspectors (admin role)
-            $inspectors = User::where('role', 'Admin')->get();
+            // Send notifications to all Lab Assistants (Staff role with Lab Assistant position)
+            $labAssistants = User::where('role', 'Staff')
+                ->where('position', 'Lab Assistant')
+                ->get();
 
-            foreach ($inspectors as $inspector) {
+            foreach ($labAssistants as $assistant) {
                 NotificationHelper::businessRegistered(
-                    $inspector->id,
-                    $business
+                    $assistant->id,
+                    $business,
+                    'assistant' // Pass role type for proper redirect
                 );
             }
 
             DB::commit();
 
             return redirect()->route('businesses.show', $business)
-                ->with('success', 'Business registered successfully. Lab Inspectors have been notified.');
+                ->with('success', 'Business registered successfully. Lab Inspectors and Lab Assistants have been notified.');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Business Store Error:', ['error' => $e->getMessage()]);

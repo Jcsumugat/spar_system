@@ -126,4 +126,9 @@ class Business extends Model
     {
         return $this->hasOne(Inspection::class)->latest();
     }
+
+    public function latestLabReport()
+    {
+        return $this->hasOne(LabReport::class)->latest('submitted_at');
+    }
 }
