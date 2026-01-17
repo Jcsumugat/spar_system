@@ -34,7 +34,11 @@ class BusinessController extends Controller
             $query->where('business_type', $request->business_type);
         }
 
-        $businesses = $query->withCount(['sanitaryPermits', 'inspections',])
+        $businesses = $query->with(['sanitaryPermits' => function ($query) {
+            $query->with(['issuedBy', 'approvedBy'])
+                ->orderBy('issue_date', 'desc');
+        }])
+            ->withCount(['sanitaryPermits', 'inspections'])
             ->latest('created_at')
             ->paginate(15);
 

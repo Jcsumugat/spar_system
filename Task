@@ -1,15 +1,3 @@
-1.Lab Inspector
-//Ang sa ana gali ni inspector sakto to pero bul on lng daad ang mga lab reports Kay ana to ni assistant
-//tas sa add business gali kon mag add kmi Kang new aw nga business tas pag save na namon wara ga guwa sa mga list bisan kapila na namon liwaton
-//kag sa ana notification gali to nong need to ma connect sa interface ni lab assistant if mag send na tana lab reports may ma notified gali Kay inspector na naka send na c assistant Kang reports of clients tas if pag click nato makita na to ang mga result nga na pass ni assistant tas tapos to amo don to pag approved ni inspector if na complete na ang tanan nga requirement
-//as sa may Non Food aw nga total list d ba may nakabutang na 2 pero pag e click bala namon wara man kmi t makita nga darwa kabilog nga business sa non-food amo lang da nong nakita ko nga problem sa interface kang inspector
-
-2. Lab Assistant
-//Tas sa lab assistant is darwa lang daad to ka icons notification kag lab reports
-//ang sa notification bala aw sa ginhambal ko kaina daad connected sanda darwa nga ma notified bala Kay assistant nga na approved or na denied ni inspector ang result Kang client amo da
-//tas ang sa lab reports is nakasulod didto man ang mga client information bala nga gin pang add ni assistant na client seym man sanda sa inspector sa add business na pero client garing ana
-//tas sa may babaw bala aw add client ana ibutang tas pag click to makita man  bala ang registration form parehas sa add business na makita ang personal information na man kag mga lab results kag may remarks ma
-//mo lng da sa assistant nong  thank u daad ma gets mo nong haha
-
-
-The issue is that when submitting Lab Reports with renewal application type, it is submitted but doesnt store in inspection database and doenst display in inspection records, only in Lab reports. But New appliction Lab reports are perfectly fine.
+Export as Excel → Downloads CSV file
+Download Document → Downloads Word (.docx) file directly
+Print Preview → Opens print dialog (can save as PDF manually)

@@ -3,13 +3,29 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 07, 2025 at 02:28 PM
+-- Generation Time: Jan 16, 2026 at 02:39 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `spar_system`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `activity_logs`
+--
 
 CREATE TABLE `activity_logs` (
   `id` bigint(20) UNSIGNED NOT NULL,
@@ -30,7 +46,7 @@ CREATE TABLE `activity_logs` (
 
 INSERT INTO `activity_logs` (`id`, `user_id`, `action`, `model_type`, `model_id`, `description`, `changes`, `ip_address`, `created_at`, `updated_at`) VALUES
 (1, 16, 'created', 'App\\Models\\Business', 10, 'Created business Tibiao Bakery', NULL, '127.0.0.1', '2025-10-30 06:20:47', '2025-10-30 06:20:47'),
-(2, 16, 'approved', 'App\\Models\\Inspection', 10, 'Approved inspection INS-2025-0009 and issued permit SP-2025--0007', NULL, '127.0.0.1', '2025-11-01 04:38:10', '2025-11-01 04:38:10'),
+(2, 16, 'approved', 'App\\Models\\Inspection', 10, 'Approved inspection INS-2025-0009 without permit issuance - duplicate permit number detected', NULL, '127.0.0.1', '2025-11-01 04:38:10', '2026-01-16 13:35:00'),
 (3, 16, 'updated', 'App\\Models\\Inspection', 11, 'Saved progress for inspection INS-2025-0010', NULL, '127.0.0.1', '2025-11-01 04:46:31', '2025-11-01 04:46:31'),
 (4, 16, 'updated', 'App\\Models\\Inspection', 11, 'Saved progress for inspection INS-2025-0010', NULL, '127.0.0.1', '2025-11-01 04:46:38', '2025-11-01 04:46:38'),
 (5, 16, 'updated', 'App\\Models\\Inspection', 11, 'Saved progress for inspection INS-2025-0010', NULL, '127.0.0.1', '2025-11-01 04:47:00', '2025-11-01 04:47:00'),
@@ -83,7 +99,31 @@ INSERT INTO `activity_logs` (`id`, `user_id`, `action`, `model_type`, `model_id`
 (52, 16, 'approved', 'App\\Models\\Inspection', 29, 'Approved inspection INS-2025-0009 and issued permit SP-2025-00011', NULL, '127.0.0.1', '2025-12-03 19:19:28', '2025-12-03 19:19:28'),
 (53, 16, 'denied', 'App\\Models\\Inspection', 26, 'Denied inspection INS-2025-0006', NULL, '127.0.0.1', '2025-12-04 18:55:29', '2025-12-04 18:55:29'),
 (54, 16, 'created', 'App\\Models\\Business', 20, 'Created business Example', NULL, '127.0.0.1', '2025-12-04 18:57:36', '2025-12-04 18:57:36'),
-(55, 16, 'updated', 'App\\Models\\Inspection', 27, 'Saved progress for inspection INS-2025-0007', NULL, '127.0.0.1', '2025-12-05 08:14:29', '2025-12-05 08:14:29');
+(55, 16, 'updated', 'App\\Models\\Inspection', 27, 'Saved progress for inspection INS-2025-0007', NULL, '127.0.0.1', '2025-12-05 08:14:29', '2025-12-05 08:14:29'),
+(56, 16, 'printed', 'App\\Models\\SanitaryPermit', 19, 'Printed sanitary permit SP-2025-00011', NULL, '127.0.0.1', '2025-12-07 07:09:56', '2025-12-07 07:09:56'),
+(57, 16, 'printed', 'App\\Models\\SanitaryPermit', 19, 'Printed sanitary permit SP-2025-00011', NULL, '127.0.0.1', '2025-12-07 07:10:24', '2025-12-07 07:10:24'),
+(58, 16, 'created', 'App\\Models\\Business', 21, 'Created business ESO Glass Aluminum', NULL, '127.0.0.1', '2025-12-12 20:49:28', '2025-12-12 20:49:28'),
+(59, 16, 'denied', 'App\\Models\\Inspection', 24, 'Denied inspection INS-2025-0004', NULL, '127.0.0.1', '2025-12-12 21:05:38', '2025-12-12 21:05:38'),
+(60, 16, 'created', 'App\\Models\\Business', 22, 'Created business sample', NULL, '127.0.0.1', '2025-12-15 23:13:12', '2025-12-15 23:13:12'),
+(61, 16, 'created', 'App\\Models\\Business', 23, 'Created business sa', NULL, '127.0.0.1', '2025-12-15 23:20:17', '2025-12-15 23:20:17'),
+(62, 16, 'created', 'App\\Models\\Business', 24, 'Created business ESO Glass Aluminum', NULL, '127.0.0.1', '2025-12-21 21:20:05', '2025-12-21 21:20:05'),
+(63, 16, 'approved', 'App\\Models\\Inspection', 30, 'Approved inspection INS-2025-0010 and issued permit SP-2025-00012', NULL, '127.0.0.1', '2025-12-21 21:22:58', '2025-12-21 21:22:58'),
+(64, 16, 'updated', 'App\\Models\\Business', 24, 'Updated business ESO Glass Aluminum', '{\"old\":{\"id\":24,\"business_name\":\"ESO Glass Aluminum\",\"owner_name\":\"Rica\",\"business_type\":\"Non-Food Establishment\",\"address\":\"Purok1\",\"barangay\":\"Bandoja\",\"contact_number\":\"09269392928\",\"email\":null,\"establishment_category\":\"Others\",\"number_of_employees\":3,\"is_active\":true,\"permit_status\":\"pending\",\"created_at\":\"2025-12-22T05:20:05.000000Z\",\"updated_at\":\"2025-12-22T05:20:05.000000Z\",\"deleted_at\":null},\"new\":{\"business_name\":\"ESO Glass Aluminum\",\"owner_name\":\"Rica\",\"business_type\":\"Non-Food Establishment\",\"address\":\"Purok1\",\"barangay\":\"Bandoja\",\"contact_number\":\"09269392928\",\"email\":null,\"establishment_category\":\"Others\",\"number_of_employees\":3,\"is_active\":true}}', '127.0.0.1', '2025-12-21 21:26:03', '2025-12-21 21:26:03'),
+(65, 16, 'updated', 'App\\Models\\Business', 24, 'Updated business ESO Glass Aluminum', '{\"old\":{\"id\":24,\"business_name\":\"ESO Glass Aluminum\",\"owner_name\":\"Rica\",\"business_type\":\"Non-Food Establishment\",\"address\":\"Purok1\",\"barangay\":\"Bandoja\",\"contact_number\":\"09269392928\",\"email\":null,\"establishment_category\":\"Others\",\"number_of_employees\":3,\"is_active\":true,\"permit_status\":\"pending\",\"created_at\":\"2025-12-22T05:20:05.000000Z\",\"updated_at\":\"2025-12-22T05:20:05.000000Z\",\"deleted_at\":null},\"new\":{\"business_name\":\"ESO Glass Aluminum\",\"owner_name\":\"Rica\",\"business_type\":\"Non-Food Establishment\",\"address\":\"Purok1\",\"barangay\":\"Bandoja\",\"contact_number\":\"09269392928\",\"email\":null,\"establishment_category\":\"Others\",\"number_of_employees\":3,\"is_active\":true}}', '127.0.0.1', '2025-12-21 21:35:00', '2025-12-21 21:35:00'),
+(66, 16, 'updated', 'App\\Models\\Business', 19, 'Updated business Honey Restaurant', '{\"old\":{\"id\":19,\"business_name\":\"Honey Restaurant\",\"owner_name\":\"Honey Esparagoza\",\"business_type\":\"Food Establishment\",\"address\":\"Purok 4\",\"barangay\":\"Poblacion\",\"contact_number\":\"09556008153\",\"email\":\"honey123@gmail.com\",\"establishment_category\":\"Restaurant\",\"number_of_employees\":10,\"is_active\":true,\"permit_status\":\"pending\",\"created_at\":\"2025-12-04T02:49:27.000000Z\",\"updated_at\":\"2025-12-04T02:49:27.000000Z\",\"deleted_at\":null},\"new\":{\"business_name\":\"Honey Restaurant\",\"owner_name\":\"Honey Esparagoza\",\"business_type\":\"Food Establishment\",\"address\":\"Purok 4\",\"barangay\":\"Poblacion\",\"contact_number\":\"09556008153\",\"email\":\"honey123@gmail.com\",\"establishment_category\":\"Restaurant\",\"number_of_employees\":10,\"is_active\":true}}', '127.0.0.1', '2025-12-21 21:35:18', '2025-12-21 21:35:18'),
+(67, 16, 'updated', 'App\\Models\\Business', 24, 'Updated business ESO Glass Aluminum', '{\"old\":{\"id\":24,\"business_name\":\"ESO Glass Aluminum\",\"owner_name\":\"Rica\",\"business_type\":\"Non-Food Establishment\",\"address\":\"Purok1\",\"barangay\":\"Bandoja\",\"contact_number\":\"09269392928\",\"email\":null,\"establishment_category\":\"Others\",\"number_of_employees\":3,\"is_active\":true,\"permit_status\":\"pending\",\"created_at\":\"2025-12-22T05:20:05.000000Z\",\"updated_at\":\"2025-12-22T05:20:05.000000Z\",\"deleted_at\":null},\"new\":{\"business_name\":\"ESO Glass Aluminum\",\"owner_name\":\"Rica\",\"business_type\":\"Non-Food Establishment\",\"address\":\"Purok1\",\"barangay\":\"Bandoja\",\"contact_number\":\"09269392928\",\"email\":null,\"establishment_category\":\"Others\",\"number_of_employees\":\"4\",\"is_active\":true}}', '127.0.0.1', '2025-12-21 21:38:26', '2025-12-21 21:38:26'),
+(68, 16, 'created', 'App\\Models\\Business', 25, 'Created business KHAR Restaurant', NULL, '127.0.0.1', '2026-01-05 21:14:31', '2026-01-05 21:14:31'),
+(69, 16, 'denied', 'App\\Models\\Inspection', 31, 'Denied inspection INS-2026-0011', NULL, '127.0.0.1', '2026-01-05 21:17:58', '2026-01-05 21:17:58'),
+(70, 16, 'updated', 'App\\Models\\Business', 15, 'Updated business ukay-ukay store', '{\"old\":{\"id\":15,\"business_name\":\"ukay-ukay store\",\"owner_name\":\"Rica Mae Remoting\",\"business_type\":\"Non-Food Establishment\",\"address\":\"Purok 1\",\"barangay\":\"Bandoja\",\"contact_number\":\"09269392928\",\"email\":\"remotingr@gmail.com\",\"establishment_category\":\"Market\",\"number_of_employees\":3,\"is_active\":true,\"permit_status\":\"pending\",\"created_at\":\"2025-12-01T04:00:05.000000Z\",\"updated_at\":\"2025-12-01T04:00:05.000000Z\",\"deleted_at\":null},\"new\":{\"business_name\":\"ukay-ukay store\",\"owner_name\":\"Rica Mae Remoting\",\"business_type\":\"Non-Food Establishment\",\"address\":\"Purok 1\",\"barangay\":\"Bandoja\",\"contact_number\":\"09269392928\",\"email\":\"remotingr@gmail.com\",\"establishment_category\":\"Market\",\"number_of_employees\":3,\"is_active\":true}}', '127.0.0.1', '2026-01-05 21:30:41', '2026-01-05 21:30:41'),
+(71, 16, 'updated', 'App\\Models\\Business', 24, 'Updated business ESO Glass Aluminum', '{\"old\":{\"id\":24,\"business_name\":\"ESO Glass Aluminum\",\"owner_name\":\"Rica\",\"business_type\":\"Non-Food Establishment\",\"address\":\"Purok1\",\"barangay\":\"Bandoja\",\"contact_number\":\"09269392928\",\"email\":null,\"establishment_category\":\"Others\",\"number_of_employees\":4,\"is_active\":true,\"permit_status\":\"pending\",\"created_at\":\"2025-12-22T05:20:05.000000Z\",\"updated_at\":\"2025-12-22T05:38:26.000000Z\",\"deleted_at\":null},\"new\":{\"business_name\":\"ESO Glass Aluminum\",\"owner_name\":\"Rica\",\"business_type\":\"Non-Food Establishment\",\"address\":\"Purok1\",\"barangay\":\"Bandoja\",\"contact_number\":\"09269392928\",\"email\":null,\"establishment_category\":\"Others\",\"number_of_employees\":4,\"is_active\":false}}', '127.0.0.1', '2026-01-05 21:32:49', '2026-01-05 21:32:49'),
+(72, 16, 'updated', 'App\\Models\\Business', 24, 'Updated business ESO Glass Aluminum', '{\"old\":{\"id\":24,\"business_name\":\"ESO Glass Aluminum\",\"owner_name\":\"Rica\",\"business_type\":\"Non-Food Establishment\",\"address\":\"Purok1\",\"barangay\":\"Bandoja\",\"contact_number\":\"09269392928\",\"email\":null,\"establishment_category\":\"Others\",\"number_of_employees\":4,\"is_active\":false,\"permit_status\":\"pending\",\"created_at\":\"2025-12-22T05:20:05.000000Z\",\"updated_at\":\"2026-01-06T05:32:49.000000Z\",\"deleted_at\":null},\"new\":{\"business_name\":\"ESO Glass Aluminum\",\"owner_name\":\"Rica\",\"business_type\":\"Non-Food Establishment\",\"address\":\"Purok1\",\"barangay\":\"Bandoja\",\"contact_number\":\"09269392928\",\"email\":null,\"establishment_category\":\"Others\",\"number_of_employees\":4,\"is_active\":true}}', '127.0.0.1', '2026-01-05 21:36:04', '2026-01-05 21:36:04'),
+(73, 16, 'approved', 'App\\Models\\Inspection', 32, 'Approved inspection INS-2026-0012 and issued permit SP-2025-00012', NULL, '127.0.0.1', '2026-01-05 21:39:32', '2026-01-16 12:23:13'),
+(74, 16, 'updated', 'App\\Models\\Business', 24, 'Updated business ESO Glass Aluminum', '{\"old\":{\"id\":24,\"business_name\":\"ESO Glass Aluminum\",\"owner_name\":\"Rica\",\"business_type\":\"Non-Food Establishment\",\"address\":\"Purok1\",\"barangay\":\"Bandoja\",\"contact_number\":\"09269392928\",\"email\":null,\"establishment_category\":\"Others\",\"number_of_employees\":4,\"is_active\":true,\"permit_status\":\"pending\",\"created_at\":\"2025-12-22T05:20:05.000000Z\",\"updated_at\":\"2026-01-06T05:36:04.000000Z\",\"deleted_at\":null},\"new\":{\"business_name\":\"ESO Glass Aluminum\",\"owner_name\":\"Rica\",\"business_type\":\"Non-Food Establishment\",\"address\":\"Purok1\",\"barangay\":\"Bandoja\",\"contact_number\":\"09269392928\",\"email\":null,\"establishment_category\":\"Others\",\"number_of_employees\":4,\"is_active\":false}}', '127.0.0.1', '2026-01-05 21:49:37', '2026-01-05 21:49:37'),
+(75, 16, 'denied', 'App\\Models\\Inspection', 38, 'Denied inspection INS-2026-0015', NULL, '127.0.0.1', '2026-01-15 07:52:43', '2026-01-15 07:52:43'),
+(76, 16, 'updated', 'App\\Models\\Business', 25, 'Updated business Angela Restaurant', '{\"old\":{\"id\":25,\"business_name\":\"KHAR Restaurant\",\"owner_name\":\"Angela Manalo\",\"business_type\":\"Food Establishment\",\"address\":\"Purok1\",\"barangay\":\"Amar\",\"contact_number\":\"09678532321\",\"email\":null,\"establishment_category\":\"Restaurant\",\"number_of_employees\":2,\"is_active\":true,\"permit_status\":\"pending\",\"created_at\":\"2026-01-05T21:14:31.000000Z\",\"updated_at\":\"2026-01-05T21:14:31.000000Z\",\"deleted_at\":null},\"new\":{\"business_name\":\"Angela Restaurant\",\"owner_name\":\"Angela Manalo\",\"business_type\":\"Food Establishment\",\"address\":\"Purok1\",\"barangay\":\"Amar\",\"contact_number\":\"09678532321\",\"email\":null,\"establishment_category\":\"Restaurant\",\"number_of_employees\":2,\"is_active\":true}}', '127.0.0.1', '2026-01-15 08:16:14', '2026-01-15 08:16:14'),
+(77, 16, 'updated', 'App\\Models\\Business', 24, 'Data cleanup: Stabilized business status to active after rapid status changes detected', NULL, '127.0.0.1', '2026-01-16 12:23:13', '2026-01-16 12:23:13'),
+(78, 16, 'updated', 'App\\Models\\Business', 24, 'Data cleanup: Stabilized business status to active after rapid status changes detected', NULL, '127.0.0.1', '2026-01-16 12:24:44', '2026-01-16 12:24:44'),
+(79, 16, 'updated', 'App\\Models\\Business', 24, 'Data cleanup: Stabilized business status to active after rapid status changes detected', NULL, '127.0.0.1', '2026-01-16 13:35:00', '2026-01-16 13:35:00');
 
 -- --------------------------------------------------------
 
@@ -124,15 +164,20 @@ INSERT INTO `businesses` (`id`, `business_name`, `owner_name`, `business_type`, 
 (9, 'Ate Mely\'s Restaurant', 'Melinda Cruz', 'Food Establishment', 'Tibiao, Antique, Philippines', 'Poblacion', '09190123456', NULL, 'Restaurant', 6, 1, 'pending', '2025-10-28 09:12:09', '2025-11-29 12:06:36', NULL),
 (10, 'Tibiao Bakery', 'John Carlo Sumugat', 'Food Establishment', 'Tibiao, Antique, Philippines', 'Poblacion', '09567460163', 'jcsumugatxd@gmail.com', 'Bakery', 5, 1, 'pending', '2025-10-30 06:20:47', '2025-11-29 12:05:30', NULL),
 (11, 'Carinderia ni aling Rosa', 'Rosa A. Amar', 'Food Establishment', 'Tibiao, Antique, Philippines', 'Malabor', '09567460163', 'rosa@gmail.com', 'Restaurant', 3, 1, 'pending', '2025-11-02 22:24:39', '2025-11-29 12:03:40', NULL),
-(12, 'SAmple', 'sample', 'Food Establishment', 'Tibiao, Antique, Philippines', 'Malabor', '09567460163', 'jcsumugatxd@gmail.com', 'Restaurant', 6, 1, 'pending', '2025-11-02 22:30:30', '2025-11-29 12:03:40', '2025-11-06 05:35:56'),
-(13, 'sample', 'asasasa', 'Food Establishment', 'Tibiao, Antique, Philippines', 'Malabor', '09567460163', 'jcsumugatxd@gmail.com', 'Restaurant', 4, 1, 'pending', '2025-11-02 22:38:10', '2025-11-29 12:03:40', '2025-11-06 05:36:01'),
+(12, 'SAmple', 'sample', 'Food Establishment', 'Tibiao, Antique, Philippines', 'Malabor', '09567460163', 'jcsumugatxd@gmail.com', 'Restaurant', 6, 1, 'pending', '2025-11-02 22:30:30', '2026-01-16 13:35:00', '2025-11-06 05:35:56'),
+(13, 'sample', 'asasasa', 'Food Establishment', 'Tibiao, Antique, Philippines', 'Malabor', '09567460163', 'jcsumugatxd@gmail.com', 'Restaurant', 4, 1, 'pending', '2025-11-02 22:38:10', '2026-01-16 13:35:00', '2025-11-06 05:36:01'),
 (14, 'Example', 'Sandro S. Farren', 'Food Establishment', 'Tibiao, Antique, Philippines', 'Tigbaboy', '09567460163', 'jcsumugatxd@gmail.com', 'Restaurant', 3, 1, 'pending', '2025-11-29 03:19:09', '2025-11-29 12:03:40', NULL),
 (15, 'ukay-ukay store', 'Rica Mae Remoting', 'Non-Food Establishment', 'Purok 1', 'Bandoja', '09269392928', 'remotingr@gmail.com', 'Market', 3, 1, 'pending', '2025-11-30 20:00:05', '2025-11-30 20:00:05', NULL),
 (16, 'Batchoyan', 'Sheena Mae Quinto', 'Food Establishment', 'PUROK 3', 'San Francisco Sur', '09854321981', 'Sheena01@gmail.com', 'Fast Food', 2, 1, 'pending', '2025-12-02 15:05:05', '2025-12-02 15:05:05', NULL),
 (17, 'Shaira Restaurant', 'Shaira Mae Espanto', 'Food Establishment', 'Purok 4', 'Santa Justa', '09765321631', 'shaira22@gmail.com', 'Restaurant', 1, 1, 'pending', '2025-12-02 15:36:30', '2025-12-02 15:36:30', NULL),
 (18, 'CJ&JJ Jewelry Shop', 'Mutya A. Bibanco', 'Non-Food Establishment', 'Purok 4', 'San Isidro', '09759026413', NULL, 'Others', 10, 1, 'pending', '2025-12-03 06:53:43', '2025-12-03 06:53:43', NULL),
 (19, 'Honey Restaurant', 'Honey Esparagoza', 'Food Establishment', 'Purok 4', 'Poblacion', '09556008153', 'honey123@gmail.com', 'Restaurant', 10, 1, 'pending', '2025-12-03 18:49:27', '2025-12-03 18:49:27', NULL),
-(20, 'Example', 'Aira Shaine Flores', 'Food Establishment', 'Purok 1', 'Malabor', '09217757035', NULL, 'Sari-Sari Store', 1, 1, 'pending', '2025-12-04 18:57:36', '2025-12-04 18:57:36', NULL);
+(20, 'Example', 'Aira Shaine Flores', 'Food Establishment', 'Purok 1', 'Malabor', '09217757035', NULL, 'Sari-Sari Store', 1, 1, 'pending', '2025-12-04 18:57:36', '2025-12-04 18:57:36', NULL),
+(21, 'ESO Glass Aluminum', 'Rica Antonio', 'Non-Food Establishment', 'Purok4', 'Bandoja', '09673245180', 'ricaantonio@gmail.com', 'Others', 3, 1, 'pending', '2025-12-12 20:49:28', '2025-12-12 20:49:28', NULL),
+(22, 'sample', 'sample', 'Food Establishment', 'Culasi Antique, Philippines', 'San Isidro', '09567460163', 'jcsumugatxd@gmail.com', 'Restaurant', 4, 1, 'pending', '2025-12-15 23:13:12', '2025-12-15 23:13:12', NULL),
+(23, 'sa', 'sas', 'Food Establishment', 'Culasi Antique, Philippines', 'Tuno', '09567460163', 'jcsumugatxd@gmail.com', 'Restaurant', 4, 1, 'pending', '2025-12-15 23:20:17', '2025-12-15 23:20:17', NULL),
+(24, 'ESO Glass Aluminum', 'Rica', 'Non-Food Establishment', 'Purok1', 'Bandoja', '09269392928', NULL, 'Others', 4, 1, 'pending', '2025-12-21 21:20:05', '2026-01-16 13:35:00', NULL),
+(25, 'Angela Restaurant', 'Angela Manalo', 'Food Establishment', 'Purok1', 'Amar', '09678532321', NULL, 'Restaurant', 2, 1, 'pending', '2026-01-05 21:14:31', '2026-01-15 08:16:14', NULL);
 
 -- --------------------------------------------------------
 
@@ -229,15 +274,21 @@ CREATE TABLE `inspections` (
 --
 
 INSERT INTO `inspections` (`id`, `inspection_number`, `business_id`, `permit_id`, `lab_report_id`, `inspection_date`, `inspection_time`, `inspector_id`, `inspection_type`, `result`, `overall_score`, `findings`, `recommendations`, `fecalysis_inspector_remarks`, `xray_sputum_inspector_remarks`, `receipt_inspector_remarks`, `dti_inspector_remarks`, `follow_up_date`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(21, 'INS-2025-0001', 14, 15, NULL, '2025-12-02', '09:00:00', 16, 'Initial', 'Approved', NULL, 'Lab report submitted on November 29, 2025. Physical inspection scheduled for new application.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-11-29 03:51:15', '2025-11-29 04:33:40', NULL),
-(22, 'INS-2025-0002', 15, 16, NULL, '2025-12-04', '09:00:00', 16, 'Initial', 'Approved', NULL, 'Lab report submitted on December 01, 2025. Physical inspection scheduled for new application.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-11-30 20:35:57', '2025-11-30 20:52:59', NULL),
-(23, 'INS-2025-0003', 10, 17, NULL, '2025-12-04', '09:00:00', 16, 'Initial', 'Approved', NULL, 'Lab report submitted on December 01, 2025. Physical inspection scheduled for new application.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-11-30 23:26:28', '2025-11-30 23:30:08', NULL),
-(24, 'INS-2025-0004', 11, NULL, NULL, '2025-12-04', '09:00:00', 16, 'Renewal', 'Pending', NULL, 'Lab report submitted on December 01, 2025. Physical inspection scheduled for permit renewal.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-12-01 05:56:16', '2025-12-01 05:56:16', NULL),
-(25, 'INS-2025-0005', 16, 18, NULL, '2025-12-05', '09:00:00', 16, 'Initial', 'Approved', NULL, 'Lab report submitted on December 02, 2025. Physical inspection scheduled for new application.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-12-02 15:09:28', '2025-12-02 15:14:18', NULL),
-(26, 'INS-2025-0006', 16, NULL, NULL, '2025-12-05', '09:00:00', 16, 'Renewal', 'Denied', NULL, 'Lab report submitted on December 02, 2025. Physical inspection scheduled for permit renewal.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-12-02 15:23:51', '2025-12-04 18:55:29', NULL),
-(27, 'INS-2025-0007', 17, NULL, NULL, '2025-12-05', '09:00:00', 16, 'Initial', 'Pending', NULL, 'Lab report submitted on December 02, 2025. Physical inspection scheduled for new application.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-12-02 15:37:57', '2025-12-02 15:37:57', NULL),
-(28, 'INS-2025-0008', 19, NULL, NULL, '2025-12-07', '09:00:00', 16, 'Initial', 'Denied', NULL, 'Lab report submitted on December 04, 2025. Physical inspection scheduled for new application.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-12-03 18:56:03', '2025-12-03 19:01:53', NULL),
-(29, 'INS-2025-0009', 19, 19, NULL, '2025-12-07', '09:00:00', 16, 'Renewal', 'Approved', NULL, 'Lab report submitted on December 04, 2025. Physical inspection scheduled for permit renewal.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-12-03 19:18:32', '2025-12-03 19:19:28', NULL);
+(21, 'INS-2025-0001', 14, 15, 19, '2025-12-02', '09:00:00', 16, 'Initial', 'Approved', NULL, 'Lab report submitted on November 29, 2025. Physical inspection scheduled for new application.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-11-29 03:51:15', '2026-01-16 12:23:13', NULL),
+(22, 'INS-2025-0002', 15, 16, 20, '2025-12-04', '09:00:00', 16, 'Initial', 'Approved', NULL, 'Lab report submitted on December 01, 2025. Physical inspection scheduled for new application.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-11-30 20:35:57', '2026-01-16 12:23:13', NULL),
+(23, 'INS-2025-0003', 10, 17, 22, '2025-12-04', '09:00:00', 16, 'Initial', 'Approved', NULL, 'Lab report submitted on December 01, 2025. Physical inspection scheduled for new application.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-11-30 23:26:28', '2026-01-16 12:23:13', NULL),
+(24, 'INS-2025-0004', 11, NULL, 23, '2025-12-04', '09:00:00', 16, 'Renewal', 'Denied', NULL, 'Lab report submitted on December 01, 2025. Physical inspection scheduled for permit renewal.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-12-01 05:56:16', '2026-01-16 12:23:13', NULL),
+(25, 'INS-2025-0005', 16, 18, 24, '2025-12-05', '09:00:00', 16, 'Initial', 'Approved', NULL, 'Lab report submitted on December 02, 2025. Physical inspection scheduled for new application.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-12-02 15:09:28', '2026-01-16 12:23:13', NULL),
+(26, 'INS-2025-0006', 16, NULL, 25, '2025-12-05', '09:00:00', 16, 'Renewal', 'Denied', NULL, 'Lab report submitted on December 02, 2025. Physical inspection scheduled for permit renewal.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-12-02 15:23:51', '2026-01-16 12:23:13', NULL),
+(27, 'INS-2025-0007', 17, NULL, 26, '2025-12-05', '09:00:00', 16, 'Initial', 'Pending', NULL, 'Lab report submitted on December 02, 2025. Physical inspection scheduled for new application.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-12-02 15:37:57', '2026-01-16 12:23:13', NULL),
+(28, 'INS-2025-0008', 19, NULL, 27, '2025-12-07', '09:00:00', 16, 'Initial', 'Denied', NULL, 'Lab report submitted on December 04, 2025. Physical inspection scheduled for new application.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-12-03 18:56:03', '2026-01-16 12:23:13', NULL),
+(29, 'INS-2025-0009', 19, 19, 27, '2025-12-07', '09:00:00', 16, 'Initial', 'Approved', NULL, 'Lab report submitted on December 04, 2025. Physical inspection scheduled for permit renewal.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-12-03 19:18:32', '2026-01-16 12:23:13', NULL),
+(30, 'INS-2025-0010', 24, 20, 29, '2025-12-25', '09:00:00', 16, 'Initial', 'Approved', NULL, 'Lab report submitted on December 22, 2025. Physical inspection scheduled for new application.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2025-12-21 21:22:26', '2026-01-16 12:29:11', NULL),
+(31, 'INS-2026-0011', 25, NULL, NULL, '2026-01-09', '09:00:00', 16, 'Initial', 'Denied', NULL, 'Lab report submitted on January 06, 2026. Physical inspection scheduled for new application.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2026-01-05 21:16:58', '2026-01-05 21:17:58', NULL),
+(32, 'INS-2026-0012', 24, 20, 31, '2026-01-09', '09:00:00', 16, 'Renewal', 'Approved', NULL, 'Lab report submitted on January 06, 2026. Physical inspection scheduled for permit renewal.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2026-01-05 21:38:33', '2026-01-16 12:29:11', NULL),
+(36, 'INS-2026-0013', 25, NULL, NULL, '2026-01-18', '09:00:00', 16, 'Initial', 'Pending', NULL, 'Lab report submitted on January 15, 2026. Physical inspection scheduled for new application.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2026-01-15 07:46:11', '2026-01-15 07:49:53', '2026-01-15 07:49:53'),
+(37, 'INS-2026-0014', 25, NULL, NULL, '2026-01-18', '09:00:00', 16, 'Renewal', 'Pending', NULL, 'Lab report submitted on January 15, 2026. Physical inspection scheduled for permit renewal.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2026-01-15 07:49:43', '2026-01-15 08:03:52', '2026-01-15 08:03:52'),
+(38, 'INS-2026-0015', 25, NULL, NULL, '2026-01-18', '09:00:00', 16, 'Renewal', 'Denied', NULL, 'Lab report submitted on January 15, 2026. Physical inspection scheduled for permit renewal.', 'Conduct on-site inspection to verify compliance with sanitary standards.', NULL, NULL, NULL, NULL, NULL, '2026-01-15 07:50:32', '2026-01-15 07:52:43', NULL);
 
 -- --------------------------------------------------------
 
@@ -326,12 +377,20 @@ INSERT INTO `lab_reports` (`id`, `business_id`, `application_type`, `submitted_b
 (19, 14, 'new', 17, 16, 'lab-reports/fecalysis/hnudb7KpIUapZ0OjQ8syMJ0jREGLVHebrrjNxIpR.png', 'lab-reports/xray-sputum/5Vt3yJ3AIgIJdXWn22NDrbsj6ZtvVcVfcBDJxsNd.jpg', 'lab-reports/receipts/UsMMBFCTRhuafm0AuTKVRjcMlr4pD6FFguskkc47.jpg', 'lab-reports/dti/wJSlJXS1Mad2McrgH3CqO1mZ3QVYFmjMIWohHb1O.jpg', 'pass', 'pass', 'pass', 'pass', NULL, NULL, NULL, NULL, NULL, 'Conduct on-site inspection to verify compliance with sanitary standards.', 'approved', 'pass', '2025-11-29 03:51:15', '2025-11-29 04:33:40', '2025-11-29 03:51:15', '2025-11-29 04:33:40', NULL),
 (20, 15, 'new', 16, 16, 'lab-reports/fecalysis/QwWAqYwQf2egHjxGhJ2cLGKJWlnsDJwW3ykzTdeb.jpg', 'lab-reports/xray-sputum/XImmaw2xvvUZ3E3CkWymzxpEPeCewiL981w3T5ip.jpg', 'lab-reports/receipts/8vYHIV0bY1WwLtKJOMGRPvIX4uJGeVxLVveCZgB0.jpg', 'lab-reports/dti/DhP0buNigBVj3rLwVne6unjXC9buBfupkfF39hCm.jpg', 'pass', 'pass', 'pass', 'pass', NULL, NULL, NULL, NULL, NULL, 'Conduct on-site inspection to verify compliance with sanitary standards.', 'approved', 'pass', '2025-11-30 20:35:57', '2025-11-30 20:52:59', '2025-11-30 20:35:57', '2025-11-30 20:52:59', NULL),
 (22, 10, 'new', 17, 16, 'lab-reports/fecalysis/rB5MNYPTOxU623ZhDFhlZpUTcbplb7UbVCV7jeWy.png', 'lab-reports/xray-sputum/guA0uyl7YvvaS5klgQAH5KR4pYCMrHvNGMYaBhSw.jpg', 'lab-reports/receipts/65ZpLRyQIYbTWIkqFcyMZ2udFFTGvcu51w5KkwoH.jpg', 'lab-reports/dti/2vzh6lU1E8YoHbhnGInkmdIRD8O6lwcLqlA0Cpgl.jpg', 'pass', 'pass', 'pass', 'pass', NULL, NULL, NULL, NULL, NULL, 'Conduct on-site inspection to verify compliance with sanitary standards.', 'approved', 'pass', '2025-11-30 23:26:28', '2025-11-30 23:30:08', '2025-11-30 23:26:28', '2025-11-30 23:30:08', NULL),
-(23, 11, 'renewal', 17, NULL, 'lab-reports/fecalysis/KRWXjFjUMCkDtvJVzUGcVnL1G6uSH9x2IHVbFQg8.png', 'lab-reports/xray-sputum/WjzSkb1gbaQ357z3i9OFqsk2Ch6ZXRWcZ4whuBXW.jpg', 'lab-reports/receipts/wuxMsDRBVedRMF8Abw6iJXNNa1gSp9jLDqTZplsk.jpg', 'lab-reports/dti/8JtIzayHysUOfjPEUkxrRuK2GOo2LlIHpCseK9FK.jpg', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending', NULL, '2025-12-01 05:56:16', NULL, '2025-12-01 05:56:16', '2025-12-01 05:56:16', NULL),
+(23, 11, 'renewal', 17, 16, 'lab-reports/fecalysis/KRWXjFjUMCkDtvJVzUGcVnL1G6uSH9x2IHVbFQg8.png', 'lab-reports/xray-sputum/WjzSkb1gbaQ357z3i9OFqsk2Ch6ZXRWcZ4whuBXW.jpg', 'lab-reports/receipts/wuxMsDRBVedRMF8Abw6iJXNNa1gSp9jLDqTZplsk.jpg', 'lab-reports/dti/8JtIzayHysUOfjPEUkxrRuK2GOo2LlIHpCseK9FK.jpg', 'pass', 'fail', 'pass', 'fail', NULL, NULL, NULL, NULL, NULL, 'Lab report submitted on December 01, 2025. Physical inspection scheduled for permit renewal.\n\nDocument-specific notes:\nX-Ray/Sputum: not complete\nDTI: not complete', 'rejected', 'fail', '2025-12-01 05:56:16', '2025-12-12 21:05:38', '2025-12-01 05:56:16', '2025-12-12 21:05:38', NULL),
 (24, 16, 'new', 17, 16, 'lab-reports/fecalysis/Snp6n3VWwP4JjdRdPgthVBsAb3OzniXdSiNtWkGv.jpg', 'lab-reports/xray-sputum/xNrgVLfXH35C4UxCYtHqwfYFaVydbVijc8P2kGte.jpg', 'lab-reports/receipts/xfuxrsratu9qMr8jhSQaLdpYDJBZzW3GIRn74Vlx.jpg', 'lab-reports/dti/JcTpLXjxJfg5A3MulBYU5G250q3F8fKszMa6Gdff.jpg', 'fail', 'fail', 'pass', 'pass', NULL, NULL, NULL, NULL, NULL, 'Lab report submitted on December 02, 2025. Physical inspection scheduled for permit renewal.\n\nDocument-specific notes:\nFecalysis: Not qualified\nX-Ray/Sputum: Not Qualified', 'rejected', 'fail', '2025-12-02 15:09:28', '2025-12-04 18:55:29', '2025-12-02 15:09:28', '2025-12-04 18:55:29', NULL),
-(25, 16, 'renewal', 17, NULL, 'lab-reports/fecalysis/onvb4sLLakDgjEsrqaPtmuLtYf2Bvu9R2awerFtg.jpg', 'lab-reports/xray-sputum/Uq5l9hOsjNHT0tXiHt4c6vdx49Nn4u4vkWnBl0b9.jpg', 'lab-reports/receipts/CvVjG4oGK4gL0ftg7CB1xw8DGhBODWp1TpHZ685l.jpg', 'lab-reports/dti/fACOrYat8rTD1RugJtr4hxS9Y3Kjw2Am9pK88K6U.jpg', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending', NULL, '2025-12-02 15:23:51', NULL, '2025-12-02 15:23:51', '2025-12-02 15:23:51', NULL),
-(26, 17, 'new', 17, NULL, 'lab-reports/fecalysis/bzm2vXnjDbUq5n4OJ3dZRb5CE9BtHbBDKXxRSGPA.jpg', 'lab-reports/xray-sputum/DLAFmXMB4IEsBci678S04cBDLK6ybOlLducJQlm4.jpg', 'lab-reports/receipts/7vLXFkvmoUe8R9PWP3j2hPBWF44DU8bELD0jajzp.jpg', 'lab-reports/dti/NwjkbrGcPMlbWwcMtcNDf2MeQK6uoo9rGIAMbjS3.png', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending', NULL, '2025-12-02 15:37:57', NULL, '2025-12-02 15:37:57', '2025-12-02 15:37:57', NULL),
+(25, 16, 'renewal', 17, NULL, 'lab-reports/fecalysis/onvb4sLLakDgjEsrqaPtmuLtYf2Bvu9R2awerFtg.jpg', 'lab-reports/xray-sputum/Uq5l9hOsjNHT0tXiHt4c6vdx49Nn4u4vkWnBl0b9.jpg', 'lab-reports/receipts/CvVjG4oGK4gL0ftg7CB1xw8DGhBODWp1TpHZ685l.jpg', 'lab-reports/dti/fACOrYat8rTD1RugJtr4hxS9Y3Kjw2Am9pK88K6U.jpg', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Deleted during data cleanup: Invalid renewal application submitted too soon after initial application.', 'rejected', NULL, '2025-12-02 15:23:51', NULL, '2025-12-02 15:23:51', '2025-12-02 15:23:51', '2026-01-16 13:35:00'),
+(26, 17, 'new', 17, NULL, 'lab-reports/fecalysis/XaiciOE7L9JwczdPUqJsM8AiCABhjAM5wBq3xrju.jpg', 'lab-reports/xray-sputum/sGLmoCQmioylag9fg2hIx37k7fA4HSaIUchQPFF3.jpg', 'lab-reports/receipts/7vLXFkvmoUe8R9PWP3j2hPBWF44DU8bELD0jajzp.jpg', 'lab-reports/dti/cUlJuMOZWWEq9HRJ6DxvfrIVmWrKPTxsHw5CdZRB.jpg', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending', NULL, '2025-12-02 15:37:57', NULL, '2025-12-02 15:37:57', '2025-12-21 21:15:03', NULL),
 (27, 19, 'new', 17, 16, 'lab-reports/fecalysis/mqbuUjp8I6LGrImE3ic2NzqDbcGrEWZJbGbchwi9.jpg', 'lab-reports/xray-sputum/EoAoVMYLESFHWjplQma2tlwjkWC4tuag2RfbZe6c.jpg', 'lab-reports/receipts/iNT6Clkn6pf1iTIFO8j6pXzFXAAniTosVncS2Y27.jpg', 'lab-reports/dti/x4yGu214xcX32oM7dqZdBz75rklfEUDRxz4RtZ2W.jpg', 'pass', 'pass', 'pass', 'pass', NULL, NULL, NULL, NULL, NULL, 'Conduct on-site inspection to verify compliance with sanitary standards.', 'approved', 'pass', '2025-12-03 18:56:03', '2025-12-03 19:19:28', '2025-12-03 18:56:03', '2025-12-03 19:19:28', NULL),
-(28, 19, 'renewal', 17, NULL, 'lab-reports/fecalysis/a4xTjt7k7iWJZkGx8S2hKTexT21YctZXDtbJRSiy.jpg', 'lab-reports/xray-sputum/rA3ACArbKdMFOpMD1PkWMxLaOAVr5YVeNpoY7tzZ.jpg', 'lab-reports/receipts/nGRiZMtqLcucdA0CLIaqPm8QyjhJbiIgz9L2I69q.png', 'lab-reports/dti/agZjXnjex1NkofpGsr0qj4cIyo2DWrghlrjacZuA.jpg', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'pending', NULL, '2025-12-03 19:18:32', NULL, '2025-12-03 19:18:32', '2025-12-03 19:18:32', NULL);
+(28, 19, 'renewal', 17, NULL, 'lab-reports/fecalysis/kiB3BaK3T1tllsTMAQXAzPwOv3SoIUjfP7MQ5X11.jpg', 'lab-reports/xray-sputum/Kv6HyPXThNA3trYppBefgWmpmInCkZH3Zjz6KfwQ.jpg', 'lab-reports/receipts/c0Gs5zeWcAJIzWE2IN2HXy13uSGCaeJEChCTTyl1.png', 'lab-reports/dti/CqIu0fIYvcxfegM1NRL9bzbmt5nR5z30TfdyLeH9.jpg', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Deleted during data cleanup: Invalid renewal application submitted too soon after initial application.', 'rejected', NULL, '2025-12-03 19:18:32', NULL, '2025-12-03 19:18:32', '2025-12-21 21:40:04', '2026-01-16 13:35:00'),
+(29, 24, 'new', 17, 16, 'lab-reports/fecalysis/PpDUzSuwgp7noqEQTtSvqtey2DUF23k6zy1zQyIG.jpg', 'lab-reports/xray-sputum/pPm5s9uKsbJYvwuzYAZH7Pwp9mAOlOLh2Jst90Yl.jpg', 'lab-reports/receipts/ycdc1XcjMMUXQr5g5FQa6oLoStqnhw3sWTjNa45t.jpg', 'lab-reports/dti/TKkB1nLdRXiRmkFim1U3HzHiiP51sczxS889DILJ.jpg', 'pass', 'pass', 'pass', 'pass', NULL, NULL, NULL, NULL, NULL, 'Conduct on-site inspection to verify compliance with sanitary standards.', 'approved', 'pass', '2025-12-21 21:22:26', '2025-12-21 21:22:58', '2025-12-21 21:22:26', '2025-12-21 21:22:58', NULL),
+(30, 25, 'new', 17, 16, 'lab-reports/fecalysis/6X9JPWaHUUFO1415OXfdJyNRSPtrXuvQGl4qbE9c.jpg', 'lab-reports/xray-sputum/ElPvMUicLCpyC9o0AK62p38AuPK95NZXIycYyP2O.png', 'lab-reports/receipts/a5eZ2f7jhLSnYoVYNeRNITtO3B8Z54PCLX7sO2TP.jpg', 'lab-reports/dti/T8TlmUZxTHNqwDc4j24CiO9nBjSitzTvmkjlODFh.jpg', 'pass', 'fail', 'pass', 'pass', NULL, NULL, NULL, NULL, NULL, 'Lab report submitted on January 06, 2026. Physical inspection scheduled for new application.\n\nDocument-specific notes:\nX-Ray/Sputum: TB', 'rejected', 'fail', '2026-01-05 21:16:58', '2026-01-05 21:17:58', '2026-01-05 21:16:58', '2026-01-05 21:17:58', NULL),
+(31, 24, 'renewal', 17, 16, 'lab-reports/fecalysis/wznoLE1j1QuCL8FYWr5mnhS2B6xkwD1B52dQhLvX.jpg', 'lab-reports/xray-sputum/7QmHjqpqJWOXlxCC7xtMpe42vT0EFEL9tF7AoGm3.png', 'lab-reports/receipts/ISQGB8YyxFuRw0vadc8fSrpCWNcrXS9wltPMXy2H.jpg', 'lab-reports/dti/FOf3xVOCaHiwRS7sCTasobsbbig2d8fvl9JQS3i5.jpg', 'pass', 'pass', 'pass', 'pass', NULL, NULL, NULL, NULL, NULL, 'Deleted during data cleanup: Invalid renewal application submitted too soon after initial application.', 'rejected', 'pass', '2026-01-05 21:38:33', '2026-01-05 21:39:32', '2026-01-05 21:38:33', '2026-01-05 21:39:32', '2026-01-16 13:35:00'),
+(33, 21, 'renewal', 17, 16, 'lab-reports/fecalysis/3SHPYGMAQRecRL44u2eeDSJBmxgTh1uuCXqmGKg8.jpg', 'lab-reports/xray-sputum/k1Kx22NqOJGa0KKxghgpIEqdCtfDZY2w6j11ujVR.png', 'lab-reports/receipts/4bJfQyLESREKViEXQnt8YuLJsQs91wkbef5IRV1V.jpg', 'lab-reports/dti/5PsismcbFr64vyxvUT4p6flnV1FkLylUYScao2FT.jpg', 'pass', 'pass', 'pass', 'pass', NULL, NULL, NULL, NULL, NULL, 'Conduct on-site inspection to verify compliance with sanitary standards.', 'approved', 'pass', '2026-01-12 05:23:35', '2026-01-12 07:05:52', '2026-01-12 05:23:35', '2026-01-12 07:05:52', NULL),
+(34, 2, 'renewal', 17, 16, 'lab-reports/fecalysis/C6YrhVE99pfzIOxjKeNBymbBaveJdyPygIr79ev1.jpg', 'lab-reports/xray-sputum/ntv5owWXknR5ym8amilb7BF8lQtcre9fXrgAMDPH.png', 'lab-reports/receipts/AnmiVZnGoNTAa9P2rvZL5AzKeQAF7V3TL32kQS3I.jpg', 'lab-reports/dti/AQ8g52qYo57EaT3gQcF30eArAXlkj0IrnzyCcwd4.jpg', 'pass', 'pass', 'pass', 'pass', NULL, NULL, NULL, NULL, NULL, 'Conduct on-site inspection to verify compliance with sanitary standards.', 'approved', 'pass', '2026-01-12 06:36:06', '2026-01-12 07:02:23', '2026-01-12 06:36:06', '2026-01-12 07:02:23', NULL),
+(35, 25, 'new', 17, 16, 'lab-reports/fecalysis/eNCFHoy8jW5lUuCJeBpysmI6efKDTZfI1NkCHkmN.jpg', 'lab-reports/xray-sputum/J99UwK71s3f0Pt12L7sYgyFc1ulgU1dHN2XxyYMh.png', 'lab-reports/receipts/NXuUEIjEauYT2NiI8kasHFfXp4BvKNbpvwsQjvem.jpg', 'lab-reports/dti/3QYtgMg7RxP42tgezrRdz9t7Dn18F1kwGWak78wY.jpg', 'fail', 'pass', 'pass', 'pass', NULL, NULL, NULL, NULL, NULL, 'Lab report submitted on January 15, 2026. Physical inspection scheduled for permit renewal.\n\nDocument-specific notes:\nFecalysis: invalid', 'rejected', 'fail', '2026-01-15 07:46:11', '2026-01-15 07:52:43', '2026-01-15 07:46:11', '2026-01-15 07:52:43', NULL),
+(36, 25, 'renewal', 17, NULL, 'lab-reports/fecalysis/xDA6J8lUZLJfP9lVEmbXxbRNwQNOA9pPLcNcKqwP.jpg', 'lab-reports/xray-sputum/8Sx5JLNUKQgUm3VsYGAXwX1z1BbLqtRmOwhDPt6U.png', 'lab-reports/receipts/mtMpfNAlipNefxuBS4Zqn1IVIE60VqENZHpdQTtp.jpg', 'lab-reports/dti/BToS35DS6diqLHfvyKokJAhXWZvrAiuS99LZ1s0s.jpg', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Deleted during data cleanup: Invalid renewal application submitted too soon after initial application.', 'rejected', NULL, '2026-01-15 07:49:43', NULL, '2026-01-15 07:49:43', '2026-01-15 07:49:53', '2026-01-16 13:35:00'),
+(37, 25, 'renewal', 17, NULL, 'lab-reports/fecalysis/oUfhPDc1jITQe5tANbrZY904UGsCcWv6WNjSgW4e.jpg', 'lab-reports/xray-sputum/uPVXYYKVHL36KFu0pcxDxN6cuJByOh3UZ6XAkGXM.png', 'lab-reports/receipts/cqX0ooN7aWfSs3Iq6keffUFm2MwxULHqpUI0MhJm.jpg', 'lab-reports/dti/CWRocstlwvDII96FSHXOOwcIRg98bdT1dcZ4gRKC.jpg', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'Deleted during data cleanup: Invalid renewal application submitted too soon after initial application.', 'rejected', NULL, '2026-01-15 07:50:32', NULL, '2026-01-15 07:50:32', '2026-01-15 08:03:52', '2026-01-16 13:35:00');
 
 -- --------------------------------------------------------
 
@@ -402,7 +461,6 @@ INSERT INTO `notifications` (`id`, `user_id`, `type`, `title`, `message`, `data`
 (22, 16, 'lab_report_reviewed', 'Lab Report Approved', 'Lab report for ukay-ukay store has been approved by the inspector', '{\"business_id\":15,\"lab_report_id\":20,\"status\":\"approved\",\"overall_result\":\"pass\"}', '2025-11-30 21:01:02', '2025-11-30 20:52:59', '2025-11-30 21:01:02'),
 (23, 16, 'inspection_approved', 'Inspection Approved', 'Inspection INS-2025-0002 for ukay-ukay store has been approved and permit SP-2025-00008 has been issued', '{\"business_id\":15,\"inspection_id\":22,\"inspection_number\":\"INS-2025-0002\",\"permit_id\":16,\"permit_number\":\"SP-2025-00008\"}', '2025-12-02 15:17:24', '2025-11-30 20:52:59', '2025-12-02 15:17:24'),
 (24, 16, 'lab_report_submitted', 'New Lab Report Submitted', 'Renewal application lab report from Carinderia ni aling Rosa requires review', '{\"business_id\":11,\"lab_report_id\":21,\"application_type\":\"renewal\"}', '2025-11-30 23:18:13', '2025-11-30 23:17:57', '2025-11-30 23:18:13'),
-(25, 16, 'lab_report_submitted', 'New Lab Report Submitted', 'New application lab report from Tibiao Bakery requires review', '{\"business_id\":10,\"lab_report_id\":22,\"application_type\":\"new\",\"inspection_id\":23}', '2025-12-02 15:17:24', '2025-11-30 23:26:28', '2025-12-02 15:17:24'),
 (26, 17, 'inspection_progress_saved', 'Inspection Progress Updated', 'Progress saved for inspection INS-2025-0003 at Tibiao Bakery', '{\"business_id\":10,\"inspection_id\":23,\"inspection_number\":\"INS-2025-0003\"}', '2025-12-04 18:54:30', '2025-11-30 23:29:57', '2025-12-04 18:54:30'),
 (27, 17, 'lab_report_reviewed', 'Lab Report Approved', 'Lab report for Tibiao Bakery has been approved by the inspector', '{\"business_id\":10,\"lab_report_id\":22,\"status\":\"approved\",\"overall_result\":\"pass\"}', '2025-11-30 23:30:22', '2025-11-30 23:30:08', '2025-11-30 23:30:22'),
 (28, 17, 'inspection_approved', 'Inspection Approved', 'Inspection INS-2025-0003 for Tibiao Bakery has been approved and permit SP-2025-00009 has been issued', '{\"business_id\":10,\"inspection_id\":23,\"inspection_number\":\"INS-2025-0003\",\"permit_id\":17,\"permit_number\":\"SP-2025-00009\"}', '2025-12-04 18:54:30', '2025-11-30 23:30:08', '2025-12-04 18:54:30'),
@@ -423,10 +481,36 @@ INSERT INTO `notifications` (`id`, `user_id`, `type`, `title`, `message`, `data`
 (43, 16, 'lab_report_submitted', 'New Lab Report Submitted', 'Renewal application lab report from Honey Restaurant requires review', '{\"business_id\":19,\"lab_report_id\":28,\"application_type\":\"renewal\",\"inspection_id\":29}', '2025-12-03 19:19:02', '2025-12-03 19:18:32', '2025-12-03 19:19:02'),
 (44, 17, 'lab_report_reviewed', 'Lab Report Approved', 'Lab report for Honey Restaurant has been approved by the inspector', '{\"business_id\":19,\"lab_report_id\":27,\"status\":\"approved\",\"overall_result\":\"pass\"}', '2025-12-03 19:19:59', '2025-12-03 19:19:28', '2025-12-03 19:19:59'),
 (45, 17, 'inspection_approved', 'Inspection Approved', 'Inspection INS-2025-0009 for Honey Restaurant has been approved and permit SP-2025-00011 has been issued', '{\"business_id\":19,\"inspection_id\":29,\"inspection_number\":\"INS-2025-0009\",\"permit_id\":19,\"permit_number\":\"SP-2025-00011\"}', '2025-12-04 18:54:30', '2025-12-03 19:19:28', '2025-12-04 18:54:30'),
-(46, 17, 'lab_report_reviewed', 'Lab Report Rejected', 'Lab report for Batchoyan has been rejected by the inspector', '{\"business_id\":16,\"lab_report_id\":24,\"status\":\"rejected\",\"overall_result\":\"fail\"}', NULL, '2025-12-04 18:55:29', '2025-12-04 18:55:29'),
-(47, 17, 'inspection_denied', 'Inspection Denied', 'Inspection INS-2025-0006 for Batchoyan has been denied', '{\"business_id\":16,\"inspection_id\":26,\"inspection_number\":\"INS-2025-0006\",\"findings\":\"Lab report submitted on December 02, 2025. Physical inspection scheduled for permit renewal.\"}', NULL, '2025-12-04 18:55:29', '2025-12-04 18:55:29'),
-(48, 16, 'business_registered', 'New Business Registered', 'New business \'Example\' owned by Aira Shaine Flores has been registered and requires inspection', '{\"business_id\":20,\"business_type\":\"Food Establishment\",\"barangay\":\"Malabor\"}', NULL, '2025-12-04 18:57:36', '2025-12-04 18:57:36'),
-(49, 17, 'inspection_progress_saved', 'Inspection Progress Updated', 'Progress saved for inspection INS-2025-0007 at Shaira Restaurant', '{\"business_id\":17,\"inspection_id\":27,\"inspection_number\":\"INS-2025-0007\"}', NULL, '2025-12-05 08:14:29', '2025-12-05 08:14:29');
+(46, 17, 'lab_report_reviewed', 'Lab Report Rejected', 'Lab report for Batchoyan has been rejected by the inspector', '{\"business_id\":16,\"lab_report_id\":24,\"status\":\"rejected\",\"overall_result\":\"fail\"}', '2025-12-12 20:43:15', '2025-12-04 18:55:29', '2025-12-12 20:43:15'),
+(47, 17, 'inspection_denied', 'Inspection Denied', 'Inspection INS-2025-0006 for Batchoyan has been denied', '{\"business_id\":16,\"inspection_id\":26,\"inspection_number\":\"INS-2025-0006\",\"findings\":\"Lab report submitted on December 02, 2025. Physical inspection scheduled for permit renewal.\"}', '2025-12-12 20:50:25', '2025-12-04 18:55:29', '2025-12-12 20:50:25'),
+(48, 16, 'business_registered', 'New Business Registered', 'New business \'Example\' owned by Aira Shaine Flores has been registered and requires inspection', '{\"business_id\":20,\"business_type\":\"Food Establishment\",\"barangay\":\"Malabor\"}', '2025-12-21 21:15:58', '2025-12-04 18:57:36', '2025-12-21 21:15:58'),
+(49, 17, 'inspection_progress_saved', 'Inspection Progress Updated', 'Progress saved for inspection INS-2025-0007 at Shaira Restaurant', '{\"business_id\":17,\"inspection_id\":27,\"inspection_number\":\"INS-2025-0007\"}', '2025-12-12 20:50:25', '2025-12-05 08:14:29', '2025-12-12 20:50:25'),
+(50, 16, 'business_registered', 'New Business Registered', 'New business \'ESO Glass Aluminum\' owned by Rica Antonio has been registered and requires inspection', '{\"business_id\":21,\"business_type\":\"Non-Food Establishment\",\"barangay\":\"Bandoja\"}', '2025-12-12 20:51:01', '2025-12-12 20:49:28', '2025-12-12 20:51:01'),
+(51, 17, 'lab_report_reviewed', 'Lab Report Rejected', 'Lab report for Carinderia ni aling Rosa has been rejected by the inspector', '{\"business_id\":11,\"lab_report_id\":23,\"status\":\"rejected\",\"overall_result\":\"fail\"}', '2025-12-12 21:05:56', '2025-12-12 21:05:38', '2025-12-12 21:05:56'),
+(52, 17, 'inspection_denied', 'Inspection Denied', 'Inspection INS-2025-0004 for Carinderia ni aling Rosa has been denied', '{\"business_id\":11,\"inspection_id\":24,\"inspection_number\":\"INS-2025-0004\",\"findings\":\"Lab report submitted on December 01, 2025. Physical inspection scheduled for permit renewal.\"}', '2025-12-21 21:16:58', '2025-12-12 21:05:38', '2025-12-21 21:16:58'),
+(53, 16, 'business_registered', 'New Business Registered', 'New business \'sample\' owned by sample has been registered and requires inspection', '{\"business_id\":22,\"business_type\":\"Food Establishment\",\"barangay\":\"San Isidro\"}', '2025-12-15 23:27:27', '2025-12-15 23:13:12', '2025-12-15 23:27:27'),
+(54, 17, 'business_registered', 'New Business Registered', 'New business \'sa\' owned by sas has been registered and requires inspection', '{\"business_id\":23,\"business_type\":\"Food Establishment\",\"barangay\":\"Tuno\"}', '2025-12-15 23:20:46', '2025-12-15 23:20:17', '2025-12-15 23:20:46'),
+(55, 17, 'business_registered', 'New Business Registered', 'New business \'ESO Glass Aluminum\' owned by Rica has been registered and requires inspection', '{\"business_id\":24,\"business_type\":\"Non-Food Establishment\",\"barangay\":\"Bandoja\"}', '2025-12-21 21:20:28', '2025-12-21 21:20:05', '2025-12-21 21:20:28'),
+(56, 16, 'inspection_due', 'Inspection Scheduled', 'Inspection scheduled for ESO Glass Aluminum on Dec 25, 2025', '{\"business_id\":24,\"inspection_id\":30}', '2025-12-21 21:22:36', '2025-12-21 21:22:26', '2025-12-21 21:22:36'),
+(57, 17, 'lab_report_reviewed', 'Lab Report Approved', 'Lab report for ESO Glass Aluminum has been approved by the inspector', '{\"business_id\":24,\"lab_report_id\":29,\"status\":\"approved\",\"overall_result\":\"pass\"}', '2025-12-21 21:23:17', '2025-12-21 21:22:58', '2025-12-21 21:23:17'),
+(58, 17, 'inspection_approved', 'Inspection Approved', 'Inspection INS-2025-0010 for ESO Glass Aluminum has been approved and permit SP-2025-00012 has been issued', '{\"business_id\":24,\"inspection_id\":30,\"inspection_number\":\"INS-2025-0010\",\"permit_id\":20,\"permit_number\":\"SP-2025-00012\"}', '2025-12-21 21:26:19', '2025-12-21 21:22:58', '2025-12-21 21:26:19'),
+(59, 17, 'business_registered', 'New Business Registered', 'New business \'KHAR Restaurant\' owned by Angela Manalo has been registered and requires inspection', '{\"business_id\":25,\"business_type\":\"Food Establishment\",\"barangay\":\"Amar\"}', '2026-01-05 21:15:13', '2026-01-05 21:14:31', '2026-01-05 21:15:13'),
+(60, 16, 'inspection_due', 'Inspection Scheduled', 'Inspection scheduled for KHAR Restaurant on Jan 09, 2026', '{\"business_id\":25,\"inspection_id\":31}', '2026-01-05 21:17:16', '2026-01-05 21:16:58', '2026-01-05 21:17:16'),
+(61, 17, 'lab_report_reviewed', 'Lab Report Rejected', 'Lab report for KHAR Restaurant has been rejected by the inspector', '{\"business_id\":25,\"lab_report_id\":30,\"status\":\"rejected\",\"overall_result\":\"fail\"}', '2026-01-05 21:18:08', '2026-01-05 21:17:58', '2026-01-05 21:18:08'),
+(62, 17, 'inspection_denied', 'Inspection Denied', 'Inspection INS-2026-0011 for KHAR Restaurant has been denied', '{\"business_id\":25,\"inspection_id\":31,\"inspection_number\":\"INS-2026-0011\",\"findings\":\"Lab report submitted on January 06, 2026. Physical inspection scheduled for new application.\"}', '2026-01-05 21:19:38', '2026-01-05 21:17:58', '2026-01-05 21:19:38'),
+(63, 16, 'inspection_due', 'Inspection Scheduled', 'Inspection scheduled for ESO Glass Aluminum on Jan 09, 2026', '{\"business_id\":24,\"inspection_id\":32}', '2026-01-05 21:38:51', '2026-01-05 21:38:33', '2026-01-05 21:38:51'),
+(64, 17, 'lab_report_reviewed', 'Lab Report Approved', 'Lab report for ESO Glass Aluminum has been approved by the inspector', '{\"business_id\":24,\"lab_report_id\":31,\"status\":\"approved\",\"overall_result\":\"pass\"}', '2026-01-05 21:42:29', '2026-01-05 21:39:32', '2026-01-05 21:42:29'),
+(65, 17, 'inspection_approved', 'Inspection Approved', 'Inspection INS-2026-0012 for ESO Glass Aluminum has been approved and permit SP-2026-00001 has been issued', '{\"business_id\":24,\"inspection_id\":32,\"inspection_number\":\"INS-2026-0012\",\"permit_id\":20,\"permit_number\":\"SP-2026-00001\"}', '2026-01-05 21:42:32', '2026-01-05 21:39:32', '2026-01-05 21:42:32'),
+(66, 16, 'inspection_due', 'Inspection Scheduled', 'Inspection scheduled for Carinderia ni aling Rosa on Jan 13, 2026', '{\"business_id\":11,\"inspection_id\":33}', '2026-01-10 07:02:07', '2026-01-10 07:01:09', '2026-01-10 07:02:07'),
+(67, 16, 'inspection_due', 'Inspection Scheduled', 'Inspection scheduled for ESO Glass Aluminum on Jan 15, 2026', '{\"business_id\":21,\"inspection_id\":34}', '2026-01-12 05:23:52', '2026-01-12 05:23:35', '2026-01-12 05:23:52'),
+(68, 16, 'inspection_due', 'Inspection Scheduled', 'Inspection scheduled for Tibiao Bakery on Jan 15, 2026', '{\"business_id\":2,\"inspection_id\":35}', '2026-01-12 07:01:38', '2026-01-12 06:36:06', '2026-01-12 07:01:38'),
+(69, 17, 'lab_report_reviewed', 'Lab Report Approved', 'Lab report for Tibiao Bakery has been approved by the inspector', '{\"business_id\":2,\"lab_report_id\":34,\"status\":\"approved\",\"overall_result\":\"pass\"}', '2026-01-15 08:03:17', '2026-01-12 07:02:23', '2026-01-15 08:03:17'),
+(70, 17, 'lab_report_reviewed', 'Lab Report Approved', 'Lab report for ESO Glass Aluminum has been approved by the inspector', '{\"business_id\":21,\"lab_report_id\":33,\"status\":\"approved\",\"overall_result\":\"pass\"}', '2026-01-15 08:03:17', '2026-01-12 07:05:52', '2026-01-15 08:03:17'),
+(71, 16, 'inspection_due', 'Inspection Scheduled', 'Inspection scheduled for KHAR Restaurant on Jan 18, 2026', '{\"business_id\":25,\"inspection_id\":36}', '2026-01-15 07:59:16', '2026-01-15 07:46:11', '2026-01-15 07:59:16'),
+(72, 16, 'inspection_due', 'Inspection Scheduled', 'Inspection scheduled for KHAR Restaurant on Jan 18, 2026', '{\"business_id\":25,\"inspection_id\":37}', '2026-01-15 07:59:16', '2026-01-15 07:49:43', '2026-01-15 07:59:16'),
+(73, 16, 'inspection_due', 'Inspection Scheduled', 'Inspection scheduled for KHAR Restaurant on Jan 18, 2026', '{\"business_id\":25,\"inspection_id\":38}', '2026-01-15 07:50:50', '2026-01-15 07:50:32', '2026-01-15 07:50:50'),
+(74, 17, 'lab_report_reviewed', 'Lab Report Rejected', 'Lab report for KHAR Restaurant has been rejected by the inspector', '{\"business_id\":25,\"lab_report_id\":35,\"status\":\"rejected\",\"overall_result\":\"fail\"}', '2026-01-15 08:03:17', '2026-01-15 07:52:43', '2026-01-15 08:03:17'),
+(75, 17, 'inspection_denied', 'Inspection Denied', 'Inspection INS-2026-0015 for KHAR Restaurant has been denied', '{\"business_id\":25,\"inspection_id\":38,\"inspection_number\":\"INS-2026-0015\",\"findings\":\"Lab report submitted on January 15, 2026. Physical inspection scheduled for permit renewal.\"}', '2026-01-15 08:03:17', '2026-01-15 07:52:43', '2026-01-15 08:03:17');
 
 -- --------------------------------------------------------
 
@@ -463,7 +547,9 @@ CREATE TABLE `permit_print_logs` (
 --
 
 INSERT INTO `permit_print_logs` (`id`, `permit_id`, `business_id`, `printed_by`, `printed_at`, `ip_address`, `user_agent`, `created_at`, `updated_at`) VALUES
-(1, 9, 2, 16, '2025-11-03 02:06:32', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-11-03 02:06:32', '2025-11-03 02:06:32');
+(1, 9, 2, 16, '2025-11-03 02:06:32', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36', '2025-11-03 02:06:32', '2025-11-03 02:06:32'),
+(2, 19, 19, 16, '2025-12-07 07:09:56', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', '2025-12-07 07:09:56', '2025-12-07 07:09:56'),
+(3, 19, 19, 16, '2025-12-07 07:10:24', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', '2025-12-07 07:10:24', '2025-12-07 07:10:24');
 
 -- --------------------------------------------------------
 
@@ -520,7 +606,8 @@ INSERT INTO `sanitary_permits` (`id`, `permit_number`, `business_id`, `permit_ty
 (16, 'SP-2025-00008', 15, 'New', '2025-12-01', '2026-12-01', 'Active', 16, 16, 'Conduct on-site inspection to verify compliance with sanitary standards.', '2025-11-30 20:52:59', '2025-11-30 20:52:59', NULL),
 (17, 'SP-2025-00009', 10, 'New', '2025-12-01', '2026-12-01', 'Active', 17, 16, 'Conduct on-site inspection to verify compliance with sanitary standards.', '2025-11-30 23:30:08', '2025-11-30 23:30:08', NULL),
 (18, 'SP-2025-00010', 16, 'New', '2025-12-02', '2026-12-02', 'Active', 17, 16, 'Conduct on-site inspection to verify compliance with sanitary standards.', '2025-12-02 15:14:18', '2025-12-02 15:14:18', NULL),
-(19, 'SP-2025-00011', 19, 'Renewal', '2025-12-04', '2026-12-04', 'Active', 17, 16, 'Conduct on-site inspection to verify compliance with sanitary standards.', '2025-12-03 19:19:28', '2025-12-03 19:19:28', NULL);
+(19, 'SP-2025-00011', 19, 'New', '2025-12-04', '2026-12-04', 'Active', 17, 16, 'Conduct on-site inspection to verify compliance with sanitary standards.', '2025-12-03 19:19:28', '2026-01-16 12:23:13', NULL),
+(20, 'SP-2025-00012', 24, 'Renewal', '2026-01-06', '2027-01-06', 'Active', 17, 16, 'Conduct on-site inspection to verify compliance with sanitary standards.', '2025-12-21 21:22:58', '2026-01-16 12:23:13', NULL);
 
 -- --------------------------------------------------------
 
@@ -560,8 +647,10 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('EPT4E3y2JF1KjUpLpJXuVfDTV2rrYuKTv9uPaA9i', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiVHJ5VjFUem1iVHFxNlRTWXIxMWgzU2plODJrTEl4eWFNZmw2OUtuRCI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1765111312),
-('O0PQFVcaSwLeTCDmrovBPaaXMLA37joNfVjoD9pJ', 16, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiMUtWSE1rSVVYYUN3aUYzakpqcXhpb3JHSjBmdDd0UE9hSGh5eDRJaiI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6ODA6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9yZXBvcnRzL2luc3BlY3Rpb24/ZGF0ZV9mcm9tPTIwMjUtMTItMDcmZGF0ZV90bz0yMDI1LTEyLTA3IjtzOjU6InJvdXRlIjtzOjE4OiJyZXBvcnRzLmluc3BlY3Rpb24iO31zOjY6Il9mbGFzaCI7YToyOntzOjM6Im9sZCI7YTowOnt9czozOiJuZXciO2E6MDp7fX1zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aToxNjt9', 1765114091);
+('o5JhZNhLCSt4xV06PxiMJpOb4Cd9fgG1oRQAxolu', 16, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiY1pnRXRPVk5VaEkxMzRSQVJkRGI4enNKcEFKaW9kYjlkWnJwb05rbSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mzg6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9yZXBvcnRzL2J1c2luZXNzIjtzOjU6InJvdXRlIjtzOjE2OiJyZXBvcnRzLmJ1c2luZXNzIjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTY7czoxMToiYWN0aXZlX3JvbGUiO3M6NToiQWRtaW4iO30=', 1768570760),
+('QqfF3qlldd1FNBnxIZoCQu5zHj69SF0EkAaxNgKW', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 Edg/143.0.0.0', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoidWtzUDZJVlc2TjdmWXRGaHBsd0JYQUVpTEljcmZwSkdwYmE2dTVTYSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1768565800),
+('SEMcXo54ikh8kUGgbJoMrCAOeRZjBmx6Cw5xtyqr', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiT2hXQzFNMTM4RnlJOURQTkJ2YWZyRlB6VEgyZFdGSjk5SGhQUDlRSSI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6Mjc6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9sb2dpbiI7czo1OiJyb3V0ZSI7czo1OiJsb2dpbiI7fXM6NjoiX2ZsYXNoIjthOjI6e3M6Mzoib2xkIjthOjA6e31zOjM6Im5ldyI7YTowOnt9fX0=', 1768565426),
+('UR26T7X5fruLV3S0b7ST82MhOWn74Z2laM9zmgHg', NULL, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'YTozOntzOjY6Il90b2tlbiI7czo0MDoiMUJqdmtFS21TeDJCTDhDQW5nTXVUM2FnSEJ3TkZEQnRlclY0Q3hOUyI7czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MjE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMCI7czo1OiJyb3V0ZSI7Tjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319fQ==', 1768566455);
 
 -- --------------------------------------------------------
 
@@ -605,7 +694,7 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `name`, `email`, `email_verified_at`, `password`, `role`, `position`, `is_active`, `remember_token`, `created_at`, `updated_at`) VALUES
 (16, 'Jc Sumugat', 'jcsumugatxd@gmail.com', NULL, '$2y$12$Tc2KJJinmABupzeMgltXGuwWPlC.I8TcjThrU9A8/L8rPcfzUx4oy', 'Admin', 'Lab Inspector', 1, NULL, '2025-10-28 17:12:08', '2025-10-28 17:12:08'),
-(17, 'Rica Mae Remoting', 'rica@gmail.com', NULL, '$2y$12$/kw3msyFmWc/U4nga.hIaOITYqjaBsWvJtJihifwDHjPEezoZgWPW', 'Staff', 'Lab Assistant', 1, 'GkQldsKLy3ucDHNVevQibtwz4UCrH9MWfJgcPZHuaWyW7R4uYS3CCoz5QVYb', '2025-11-01 06:26:51', '2025-11-01 06:26:51');
+(17, 'Rica Mae Remoting', 'rica@gmail.com', NULL, '$2y$12$/kw3msyFmWc/U4nga.hIaOITYqjaBsWvJtJihifwDHjPEezoZgWPW', 'Staff', 'Lab Assistant', 1, '5yXjdbo6x86EaPUS1SZDpJLiFxLd1XHvG6Nr5OsyNkDSrg13DIgfz8XFygIY', '2025-11-01 06:26:51', '2025-11-01 06:26:51');
 
 --
 -- Indexes for dumped tables
@@ -656,10 +745,11 @@ ALTER TABLE `failed_jobs`
 ALTER TABLE `inspections`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `inspection_number` (`inspection_number`),
-  ADD KEY `business_id` (`business_id`),
-  ADD KEY `permit_id` (`permit_id`),
   ADD KEY `inspector_id` (`inspector_id`),
-  ADD KEY `lab_report_id` (`lab_report_id`);
+  ADD KEY `lab_report_id` (`lab_report_id`),
+  ADD KEY `inspections_ibfk_2` (`permit_id`),
+  ADD KEY `idx_business_result` (`business_id`,`result`),
+  ADD KEY `idx_inspection_date` (`inspection_date`);
 
 --
 -- Indexes for table `jobs`
@@ -684,7 +774,9 @@ ALTER TABLE `lab_reports`
   ADD KEY `lab_reports_business_id_index` (`business_id`),
   ADD KEY `lab_reports_status_index` (`status`),
   ADD KEY `lab_reports_application_type_index` (`application_type`),
-  ADD KEY `lab_reports_submitted_at_index` (`submitted_at`);
+  ADD KEY `lab_reports_submitted_at_index` (`submitted_at`),
+  ADD KEY `idx_business_status` (`business_id`,`status`),
+  ADD KEY `idx_application_submitted` (`application_type`,`submitted_at`);
 
 --
 -- Indexes for table `migrations`
@@ -729,9 +821,10 @@ ALTER TABLE `permit_renewals`
 ALTER TABLE `sanitary_permits`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `permit_number` (`permit_number`),
-  ADD KEY `business_id` (`business_id`),
+  ADD UNIQUE KEY `unique_active_permit_number` (`permit_number`),
   ADD KEY `issued_by` (`issued_by`),
-  ADD KEY `approved_by` (`approved_by`);
+  ADD KEY `approved_by` (`approved_by`),
+  ADD KEY `idx_business_status_expiry` (`business_id`,`status`,`expiry_date`);
 
 --
 -- Indexes for table `saved_reports`
@@ -772,13 +865,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=80;
 
 --
 -- AUTO_INCREMENT for table `businesses`
 --
 ALTER TABLE `businesses`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
 -- AUTO_INCREMENT for table `document_attachments`
@@ -796,7 +889,7 @@ ALTER TABLE `failed_jobs`
 -- AUTO_INCREMENT for table `inspections`
 --
 ALTER TABLE `inspections`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT for table `jobs`
@@ -808,7 +901,7 @@ ALTER TABLE `jobs`
 -- AUTO_INCREMENT for table `lab_reports`
 --
 ALTER TABLE `lab_reports`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT for table `migrations`
@@ -820,13 +913,13 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
 
 --
 -- AUTO_INCREMENT for table `permit_print_logs`
 --
 ALTER TABLE `permit_print_logs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `permit_renewals`
@@ -838,7 +931,7 @@ ALTER TABLE `permit_renewals`
 -- AUTO_INCREMENT for table `sanitary_permits`
 --
 ALTER TABLE `sanitary_permits`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `saved_reports`
@@ -879,7 +972,7 @@ ALTER TABLE `document_attachments`
 --
 ALTER TABLE `inspections`
   ADD CONSTRAINT `inspections_ibfk_1` FOREIGN KEY (`business_id`) REFERENCES `businesses` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `inspections_ibfk_2` FOREIGN KEY (`permit_id`) REFERENCES `sanitary_permits` (`id`),
+  ADD CONSTRAINT `inspections_ibfk_2` FOREIGN KEY (`permit_id`) REFERENCES `sanitary_permits` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `inspections_ibfk_3` FOREIGN KEY (`inspector_id`) REFERENCES `users` (`id`),
   ADD CONSTRAINT `inspections_ibfk_4` FOREIGN KEY (`lab_report_id`) REFERENCES `lab_reports` (`id`) ON DELETE SET NULL;
 

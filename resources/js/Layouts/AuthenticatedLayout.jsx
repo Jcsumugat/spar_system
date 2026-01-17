@@ -19,6 +19,7 @@ import {
     FlaskConical,
     Check,
     Trash2,
+    Clock,
 } from "lucide-react";
 import axios from "axios";
 
@@ -90,6 +91,12 @@ export default function AuthenticatedLayout({ user, children }) {
             href: route("lab-reports.index"),
             icon: FlaskConical,
             current: url.startsWith("/lab-reports"),
+        },
+        {
+            name: "Activity Logs",
+            href: route("activity-logs.index"),
+            icon: Clock,
+            current: url.startsWith("/activity-logs"),
         },
         {
             name: "Reports",

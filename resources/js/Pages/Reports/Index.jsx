@@ -12,9 +12,34 @@ import {
     Award,
     BarChart3,
     RefreshCw,
-    Search,
     ChevronRight,
+    ChevronLeft,
+    X,
 } from "lucide-react";
+
+const barangays = [
+    "Alegre",
+    "Amar",
+    "Bandoja",
+    "Castillo",
+    "Esparagoza",
+    "Importante",
+    "La Paz",
+    "Malabor",
+    "Martinez",
+    "Natividad",
+    "Poblacion",
+    "Pitac",
+    "Salazar",
+    "San Francisco Norte",
+    "San Francisco Sur",
+    "San Isidro",
+    "Santa Ana",
+    "Santa Justa",
+    "Santo Rosario",
+    "Tigbaboy",
+    "Tuno",
+];
 
 export default function Reports({
     auth,
@@ -27,10 +52,30 @@ export default function Reports({
     const [loading, setLoading] = useState(false);
     const [dateRange, setDateRange] = useState("all");
     const [showFilters, setShowFilters] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(25);
     const [filters, setFilters] = useState({
         date_from: "",
         date_to: "",
         search: "",
+        // Business filters
+        business_type: "",
+        barangay: "",
+        permit_status: "",
+        // Inspection filters
+        result: "",
+        inspection_type: "",
+        inspector_id: "",
+        // Permit filters
+        status: "",
+        permit_type: "",
+        expiring_soon: false,
+        // Lab filters
+        application_type: "",
+        overall_result: "",
+        // Activity filters
+        action: "",
+        user_id: "",
     });
 
     const reportTypes = [
@@ -44,7 +89,6 @@ export default function Reports({
         },
         { id: "permit", name: "Permit", icon: Award, color: "green" },
         { id: "lab", name: "Lab Reports", icon: FlaskConical, color: "orange" },
-        { id: "activity", name: "Activity", icon: FileText, color: "pink" },
     ];
 
     const dateRanges = [
@@ -55,12 +99,11 @@ export default function Reports({
         { id: "year", label: "This Year" },
         { id: "custom", label: "Custom Range" },
     ];
-
     useEffect(() => {
         if (activeTab !== "overview") {
             fetchReportData();
         }
-    }, [activeTab, dateRange]);
+    }, [activeTab]);
 
     useEffect(() => {
         if (dateRange !== "custom") {
@@ -69,34 +112,77 @@ export default function Reports({
         }
     }, [dateRange]);
 
+    // Debounce search and filters to avoid too many API calls
+    useEffect(() => {
+        if (activeTab === "overview") return;
+
+        const timeoutId = setTimeout(() => {
+            setCurrentPage(1); // Reset to first page when filters change
+            fetchReportData();
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+    }, [
+        filters.date_from,
+        filters.date_to,
+        filters.search,
+        filters.business_type,
+        filters.barangay,
+        filters.permit_status,
+        filters.result,
+        filters.inspection_type,
+        filters.inspector_id,
+        filters.status,
+        filters.permit_type,
+        filters.expiring_soon,
+        filters.application_type,
+        filters.overall_result,
+        filters.action,
+        filters.user_id,
+    ]);
+
+    // Reset to first page when changing tabs
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeTab]);
+
     const getDateRangeValues = (range) => {
         const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time to start of day
+
         let date_from = "";
-        let date_to = new Date().toISOString().split("T")[0];
+        let date_to = "";
 
         switch (range) {
             case "today":
-                date_from = date_to;
+                date_from = today.toISOString().split("T")[0];
+                date_to = today.toISOString().split("T")[0];
                 break;
             case "week":
                 const weekAgo = new Date(today);
                 weekAgo.setDate(weekAgo.getDate() - 7);
                 date_from = weekAgo.toISOString().split("T")[0];
+                date_to = today.toISOString().split("T")[0];
                 break;
             case "month":
                 const monthAgo = new Date(today);
                 monthAgo.setMonth(monthAgo.getMonth() - 1);
                 date_from = monthAgo.toISOString().split("T")[0];
+                date_to = today.toISOString().split("T")[0];
                 break;
             case "year":
                 const yearAgo = new Date(today);
                 yearAgo.setFullYear(yearAgo.getFullYear() - 1);
                 date_from = yearAgo.toISOString().split("T")[0];
+                date_to = today.toISOString().split("T")[0];
                 break;
             case "all":
                 date_from = "";
                 date_to = "";
                 break;
+            case "custom":
+                // Don't override custom dates
+                return {};
         }
 
         return { date_from, date_to };
@@ -105,9 +191,57 @@ export default function Reports({
     const fetchReportData = async () => {
         setLoading(true);
         try {
-            const params = new URLSearchParams(
-                Object.entries(filters).filter(([_, value]) => value !== "")
-            );
+            const params = new URLSearchParams();
+
+            // Add common filters
+            if (filters.date_from)
+                params.append("date_from", filters.date_from);
+            if (filters.date_to) params.append("date_to", filters.date_to);
+            if (filters.search) params.append("search", filters.search);
+
+            // Add report-specific filters
+            switch (activeTab) {
+                case "business":
+                    if (filters.business_type)
+                        params.append("business_type", filters.business_type);
+                    if (filters.barangay)
+                        params.append("barangay", filters.barangay);
+                    if (filters.permit_status)
+                        params.append("permit_status", filters.permit_status);
+                    break;
+                case "inspection":
+                    if (filters.result) params.append("result", filters.result);
+                    if (filters.inspection_type)
+                        params.append(
+                            "inspection_type",
+                            filters.inspection_type
+                        );
+                    if (filters.inspector_id)
+                        params.append("inspector_id", filters.inspector_id);
+                    break;
+                case "permit":
+                    if (filters.status) params.append("status", filters.status);
+                    if (filters.permit_type)
+                        params.append("permit_type", filters.permit_type);
+                    if (filters.expiring_soon)
+                        params.append("expiring_soon", "1");
+                    break;
+                case "lab":
+                    if (filters.application_type)
+                        params.append(
+                            "application_type",
+                            filters.application_type
+                        );
+                    if (filters.overall_result)
+                        params.append("overall_result", filters.overall_result);
+                    break;
+                case "activity":
+                    if (filters.action) params.append("action", filters.action);
+                    if (filters.user_id)
+                        params.append("user_id", filters.user_id);
+                    break;
+            }
+
             const response = await fetch(`/reports/${activeTab}?${params}`);
             const data = await response.json();
             setReportData(data);
@@ -122,18 +256,85 @@ export default function Reports({
         setFilters((prev) => ({ ...prev, [key]: value }));
     };
 
-    const applyFilters = () => {
-        fetchReportData();
-        setShowFilters(false);
+    const handleDateChange = (key, value) => {
+        setFilters((prev) => ({ ...prev, [key]: value }));
+
+        if (dateRange !== "custom") {
+            setDateRange("custom");
+        }
+    };
+
+    const getSearchPlaceholder = () => {
+        switch (activeTab) {
+            case "business":
+                return "Search by business name, owner, or contact...";
+            case "inspection":
+                return "Search by business name or inspection number...";
+            case "permit":
+                return "Search by business name or permit number...";
+            case "lab":
+                return "Search by business name...";
+            default:
+                return "Search records...";
+        }
     };
 
     const resetFilters = () => {
-        setFilters({ date_from: "", date_to: "", search: "" });
+        setFilters({
+            date_from: "",
+            date_to: "",
+            search: "",
+            business_type: "",
+            barangay: "",
+            permit_status: "",
+            result: "",
+            inspection_type: "",
+            inspector_id: "",
+            status: "",
+            permit_type: "",
+            expiring_soon: false,
+            application_type: "",
+            overall_result: "",
+            action: "",
+            user_id: "",
+        });
         setDateRange("all");
-        setShowFilters(false);
+        setCurrentPage(1);
     };
 
-    // Update the getTableColumns function - remove Score column from inspection
+    const getActiveFiltersCount = () => {
+        let count = 0;
+        if (filters.search) count++;
+        if (dateRange !== "all") count++;
+
+        switch (activeTab) {
+            case "business":
+                if (filters.business_type) count++;
+                if (filters.barangay) count++;
+                if (filters.permit_status) count++;
+                break;
+            case "inspection":
+                if (filters.result) count++;
+                if (filters.inspection_type) count++;
+                if (filters.inspector_id) count++;
+                break;
+            case "permit":
+                if (filters.status) count++;
+                if (filters.permit_type) count++;
+                if (filters.expiring_soon) count++;
+                break;
+            case "lab":
+                if (filters.application_type) count++;
+                if (filters.overall_result) count++;
+                break;
+            case "activity":
+                if (filters.action) count++;
+                if (filters.user_id) count++;
+                break;
+        }
+        return count;
+    };
+
     const getTableColumns = () => {
         switch (activeTab) {
             case "business":
@@ -190,15 +391,6 @@ export default function Reports({
                     { key: "overall_result", label: "Result", width: "w-24" },
                     { key: "submitted_at", label: "Date", width: "w-32" },
                 ];
-            case "activity":
-                return [
-                    { key: "id", label: "#", width: "w-20" },
-                    { key: "user_name", label: "User", width: "w-40" },
-                    { key: "action", label: "Action", width: "w-28" },
-                    { key: "model_type", label: "Module", width: "w-32" },
-                    { key: "description", label: "Description", width: "w-64" },
-                    { key: "created_at", label: "Date", width: "w-40" },
-                ];
             default:
                 return [];
         }
@@ -254,6 +446,7 @@ export default function Reports({
             );
         }
 
+        // Format dates without time - matches Excel export format
         if (
             column.key.includes("date") ||
             column.key === "created_at" ||
@@ -261,42 +454,12 @@ export default function Reports({
         ) {
             if (!value) return <span className="text-gray-400">-</span>;
             const date = new Date(value);
+            // Format as MM/DD/YYYY (matching the Excel export)
             return date.toLocaleDateString("en-US", {
                 year: "numeric",
-                month: "short",
-                day: "numeric",
-                ...(column.key === "created_at" && {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                }),
+                month: "2-digit",
+                day: "2-digit",
             });
-        }
-
-        if (column.key === "action") {
-            const actionColors = {
-                created: "text-blue-700 bg-blue-50 border-blue-200",
-                updated: "text-purple-700 bg-purple-50 border-purple-200",
-                deleted: "text-red-700 bg-red-50 border-red-200",
-                approved: "text-green-700 bg-green-50 border-green-200",
-                denied: "text-red-700 bg-red-50 border-red-200",
-                printed: "text-gray-700 bg-gray-50 border-gray-200",
-            };
-            const colorClass =
-                actionColors[value?.toLowerCase()] ||
-                "text-gray-700 bg-gray-50 border-gray-200";
-
-            return (
-                <span
-                    className={`inline-flex px-2.5 py-1 text-xs font-medium rounded-md border ${colorClass}`}
-                >
-                    {value}
-                </span>
-            );
-        }
-
-        if (column.key === "model_type") {
-            const modelName = value ? value.split("\\").pop() : "N/A";
-            return <span className="text-sm text-gray-700">{modelName}</span>;
         }
 
         if (column.key === "business_type") {
@@ -319,60 +482,95 @@ export default function Reports({
         setShowExportMenu(false);
 
         try {
+            // For print preview, open directly in new window using GET request
+            if (format === "print") {
+                const params = new URLSearchParams({
+                    type: activeTab,
+                    format: "print",
+                    filters: JSON.stringify(filters),
+                });
+
+                // Open in new window
+                window.open(`/reports/export?${params.toString()}`, "_blank");
+                setExporting(false);
+                return;
+            }
+
+            // For HTML/PDF preview, also open in new window
+            if (format === "html") {
+                const params = new URLSearchParams({
+                    type: activeTab,
+                    format: "html",
+                    filters: JSON.stringify(filters),
+                });
+
+                // Open in new window
+                window.open(`/reports/export?${params.toString()}`, "_blank");
+                setExporting(false);
+                return;
+            }
+
             const csrfToken = document
                 .querySelector('meta[name="csrf-token"]')
                 ?.getAttribute("content");
 
+            // For other formats (CSV, Excel), use fetch for download
             const response = await fetch("/reports/export", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "X-CSRF-TOKEN": csrfToken || "",
-                    Accept: "application/json",
                 },
-                body: JSON.stringify({ type: activeTab, format, filters }),
+                body: JSON.stringify({
+                    type: activeTab,
+                    format: format,
+                    filters,
+                }),
                 credentials: "same-origin",
             });
 
-            // Check if response is ok
             if (!response.ok) {
-                const errorText = await response.text();
-                console.error("Export error response:", errorText);
-                alert(
-                    `Export failed: ${response.status} - ${response.statusText}`
-                );
-                setExporting(false);
-                return;
+                const contentType = response.headers.get("content-type");
+                let errorMessage = `Export failed with status ${response.status}`;
+
+                if (contentType && contentType.includes("application/json")) {
+                    const errorData = await response.json();
+                    errorMessage =
+                        errorData.message || errorData.error || errorMessage;
+                    console.error("Error details:", errorData);
+                } else {
+                    const errorText = await response.text();
+                    console.error("Export error:", errorText);
+                    errorMessage = errorText.substring(0, 200);
+                }
+
+                throw new Error(errorMessage);
             }
 
-            if (format === "csv" || format === "excel") {
-                // Handle file download for CSV/Excel
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `${activeTab}_report_${
-                    new Date().toISOString().split("T")[0]
-                }.${format === "excel" ? "csv" : format}`;
-                document.body.appendChild(a);
-                a.click();
+            // For direct downloads (Excel, CSV)
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.style.display = "none";
+            a.href = url;
+
+            let extension = format;
+            if (format === "excel") extension = "csv";
+
+            const timestamp = new Date().toISOString().split("T")[0];
+            a.download = `${activeTab}_report_${timestamp}.${extension}`;
+
+            document.body.appendChild(a);
+            a.click();
+
+            setTimeout(() => {
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
-                alert(`${format.toUpperCase()} exported successfully!`);
-            } else if (format === "pdf") {
-                // Handle PDF preview/print
-                const html = await response.text();
-                const printWindow = window.open("", "_blank");
-                if (printWindow) {
-                    printWindow.document.write(html);
-                    printWindow.document.close();
-                    setTimeout(() => {
-                        printWindow.print();
-                    }, 500);
-                } else {
-                    alert("Please allow pop-ups to view the PDF");
-                }
-            }
+            }, 100);
+
+            const formatName =
+                format === "excel" ? "CSV" : format.toUpperCase();
+            alert(`${formatName} report downloaded successfully!`);
         } catch (error) {
             console.error("Export error:", error);
             alert(`Export failed: ${error.message}`);
@@ -514,54 +712,291 @@ export default function Reports({
         );
     };
 
+    const renderSpecificFilters = () => {
+        switch (activeTab) {
+            case "business":
+                return (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Business Type
+                            </label>
+                            <select
+                                value={filters.business_type}
+                                onChange={(e) =>
+                                    handleFilterChange(
+                                        "business_type",
+                                        e.target.value
+                                    )
+                                }
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            >
+                                <option value="">All Types</option>
+                                <option value="Food Establishment">
+                                    Food Establishment
+                                </option>
+                                <option value="Non-Food Establishment">
+                                    Non-Food Establishment
+                                </option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Barangay
+                            </label>
+                            <select
+                                value={filters.barangay}
+                                onChange={(e) =>
+                                    handleFilterChange(
+                                        "barangay",
+                                        e.target.value
+                                    )
+                                }
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            >
+                                <option value="">All Barangays</option>
+                                {barangays.map((barangay) => (
+                                    <option key={barangay} value={barangay}>
+                                        {barangay}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Permit Status
+                            </label>
+                            <select
+                                value={filters.permit_status}
+                                onChange={(e) =>
+                                    handleFilterChange(
+                                        "permit_status",
+                                        e.target.value
+                                    )
+                                }
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            >
+                                <option value="">All Status</option>
+                                <option value="Active">Active</option>
+                                <option value="Expired">Expired</option>
+                                <option value="Pending">Pending</option>
+                                <option value="No Permit">No Permit</option>
+                            </select>
+                        </div>
+                    </div>
+                );
+
+            case "inspection":
+                return (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Result
+                            </label>
+                            <select
+                                value={filters.result}
+                                onChange={(e) =>
+                                    handleFilterChange("result", e.target.value)
+                                }
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            >
+                                <option value="">All Results</option>
+                                <option value="Approved">Approved</option>
+                                <option value="Denied">Denied</option>
+                                <option value="Pending">Pending</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Inspection Type
+                            </label>
+                            <select
+                                value={filters.inspection_type}
+                                onChange={(e) =>
+                                    handleFilterChange(
+                                        "inspection_type",
+                                        e.target.value
+                                    )
+                                }
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            >
+                                <option value="">All Types</option>
+                                <option value="Initial">Initial</option>
+                                <option value="Renewal">Renewal</option>
+                            </select>
+                        </div>
+                    </div>
+                );
+
+            case "permit":
+                return (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Status
+                            </label>
+                            <select
+                                value={filters.status}
+                                onChange={(e) =>
+                                    handleFilterChange("status", e.target.value)
+                                }
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            >
+                                <option value="">All Status</option>
+                                <option value="Active">Active</option>
+                                <option value="Expired">Expired</option>
+                                <option value="Expiring Soon">
+                                    Expiring Soon
+                                </option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Permit Type
+                            </label>
+                            <select
+                                value={filters.permit_type}
+                                onChange={(e) =>
+                                    handleFilterChange(
+                                        "permit_type",
+                                        e.target.value
+                                    )
+                                }
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            >
+                                <option value="">All Types</option>
+                                <option value="New">New</option>
+                                <option value="Renewal">Renewal</option>
+                            </select>
+                        </div>
+                        <div className="flex items-end">
+                            <label className="flex items-center space-x-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={filters.expiring_soon}
+                                    onChange={(e) =>
+                                        handleFilterChange(
+                                            "expiring_soon",
+                                            e.target.checked
+                                        )
+                                    }
+                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                />
+                                <span className="text-sm font-medium text-gray-700">
+                                    Show Expiring Soon Only
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                );
+
+            case "lab":
+                return (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Application Type
+                            </label>
+                            <select
+                                value={filters.application_type}
+                                onChange={(e) =>
+                                    handleFilterChange(
+                                        "application_type",
+                                        e.target.value
+                                    )
+                                }
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            >
+                                11:29 PM<option value="">All Types</option>
+                                <option value="New">New</option>
+                                <option value="Renewal">Renewal</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Overall Result
+                            </label>
+                            <select
+                                value={filters.overall_result}
+                                onChange={(e) =>
+                                    handleFilterChange(
+                                        "overall_result",
+                                        e.target.value
+                                    )
+                                }
+                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            >
+                                <option value="">All Results</option>
+                                <option value="pass">Pass</option>
+                                <option value="fail">Fail</option>
+                            </select>
+                        </div>
+                    </div>
+                );
+            default:
+                return null;
+        }
+    };
+
     const renderFilters = () => (
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
             <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                    <Filter className="w-5 h-5 text-gray-600" />
+                <div className="flex items-center space-x-3">
+                    <Filter className="w-5 h-5 text-gray-400" />
                     <h3 className="text-lg font-semibold text-gray-900">
-                        Filters & Date Range
+                        Filters
                     </h3>
+                    {getActiveFiltersCount() > 0 && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {getActiveFiltersCount()} active
+                        </span>
+                    )}
                 </div>
-                <button
-                    onClick={() => setShowFilters(!showFilters)}
-                    className="lg:hidden text-sm text-blue-600 hover:text-blue-700 font-medium"
-                >
-                    {showFilters ? "Hide" : "Show"} Filters
-                </button>
-            </div>
-
-            <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Quick Date Range
-                </label>
-                <div className="flex flex-wrap gap-2">
-                    {dateRanges.map((range) => (
+                <div className="flex items-center space-x-3">
+                    {getActiveFiltersCount() > 0 && (
                         <button
-                            key={range.id}
-                            onClick={() => setDateRange(range.id)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                                dateRange === range.id
-                                    ? "bg-blue-600 text-white shadow-md"
-                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                            }`}
+                            onClick={resetFilters}
+                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                         >
-                            {range.label}
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                            Reset
                         </button>
-                    ))}
+                    )}
+                    <button
+                        onClick={() => setShowFilters(!showFilters)}
+                        className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        {showFilters ? "Hide" : "Show"} Filters
+                    </button>
                 </div>
             </div>
 
-            <div
-                className={`space-y-4 ${
-                    showFilters || dateRange === "custom"
-                        ? "block"
-                        : "hidden lg:block"
-                }`}
-            >
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {showFilters && (
+                <div className="space-y-4">
+                    {/* Date Range Pills */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-3">
+                            Date Range
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                            {dateRanges.map((range) => (
+                                <button
+                                    key={range.id}
+                                    onClick={() => setDateRange(range.id)}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                                        dateRange === range.id
+                                            ? "bg-blue-600 text-white shadow-md"
+                                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                    }`}
+                                >
+                                    {range.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     {dateRange === "custom" && (
-                        <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     From Date
@@ -570,11 +1005,12 @@ export default function Reports({
                                     type="date"
                                     value={filters.date_from}
                                     onChange={(e) =>
-                                        handleFilterChange(
+                                        handleDateChange(
                                             "date_from",
                                             e.target.value
                                         )
                                     }
+                                    max={filters.date_to || undefined}
                                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                 />
                             </div>
@@ -586,112 +1022,218 @@ export default function Reports({
                                     type="date"
                                     value={filters.date_to}
                                     onChange={(e) =>
-                                        handleFilterChange(
+                                        handleDateChange(
                                             "date_to",
                                             e.target.value
                                         )
                                     }
+                                    min={filters.date_from || undefined}
                                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                 />
                             </div>
-                        </>
+                        </div>
                     )}
 
-                    <div
-                        className={
-                            dateRange === "custom" ? "" : "md:col-span-2"
-                        }
-                    >
+                    {/* Specific Filters */}
+                    {renderSpecificFilters()}
+                    {/* Search Bar */}
+                    <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                             Search
                         </label>
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Search in report..."
                                 value={filters.search}
                                 onChange={(e) =>
                                     handleFilterChange("search", e.target.value)
                                 }
+                                placeholder={getSearchPlaceholder()}
                                 className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                             />
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg
+                                    className="h-5 w-5 text-gray-400"
+                                    fill="none"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            {filters.search && (
+                                <button
+                                    onClick={() =>
+                                        handleFilterChange("search", "")
+                                    }
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                >
+                                    <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
-
-                <div className="flex items-center gap-3 pt-2">
-                    <button
-                        onClick={applyFilters}
-                        disabled={exporting}
-                        className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-sm hover:shadow-md font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Apply Filters
-                    </button>
-                    <button
-                        onClick={resetFilters}
-                        disabled={exporting}
-                        className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <RefreshCw className="w-4 h-4" />
-                        Reset
-                    </button>
-
-                    {/* Export Dropdown */}
-                    <div className="ml-auto relative">
-                        <button
-                            onClick={() => setShowExportMenu(!showExportMenu)}
-                            disabled={exporting}
-                            className="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-sm hover:shadow-md font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <Download className="w-4 h-4" />
-                            {exporting ? "Exporting..." : "Export"}
-                            <ChevronRight
-                                className={`w-4 h-4 transition-transform ${
-                                    showExportMenu ? "rotate-90" : ""
-                                }`}
-                            />
-                        </button>
-
-                        {showExportMenu && !exporting && (
-                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
-                                <div className="py-1">
-                                    <button
-                                        onClick={() => exportReport("excel")}
-                                        className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 transition-colors flex items-center gap-3"
-                                    >
-                                        <FileText className="w-4 h-4 text-green-600" />
-                                        <div>
-                                            <div className="font-medium">
-                                                Export as Excel
-                                            </div>
-                                            <div className="text-xs text-gray-500">
-                                                Microsoft Excel format
-                                            </div>
-                                        </div>
-                                    </button>
-                                    <button
-                                        onClick={() => exportReport("pdf")}
-                                        className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 transition-colors flex items-center gap-3"
-                                    >
-                                        <FileText className="w-4 h-4 text-green-600" />
-                                        <div>
-                                            <div className="font-medium">
-                                                Export as PDF
-                                            </div>
-                                            <div className="text-xs text-gray-500">
-                                                Printable document
-                                            </div>
-                                        </div>
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
+            )}
         </div>
     );
+
+    // Pagination Logic
+    const getPaginatedData = () => {
+        if (!reportData?.data) return [];
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return reportData.data.slice(startIndex, endIndex);
+    };
+
+    const totalPages = reportData?.data
+        ? Math.ceil(reportData.data.length / itemsPerPage)
+        : 0;
+    const startRecord =
+        reportData?.data?.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
+    const endRecord = Math.min(
+        currentPage * itemsPerPage,
+        reportData?.data?.length || 0
+    );
+
+    const renderPagination = () => {
+        if (!reportData?.data || reportData.data.length === 0) return null;
+
+        const pageNumbers = [];
+        const maxPageButtons = 5;
+        let startPage = Math.max(
+            1,
+            currentPage - Math.floor(maxPageButtons / 2)
+        );
+        let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+
+        if (endPage - startPage < maxPageButtons - 1) {
+            startPage = Math.max(1, endPage - maxPageButtons + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            pageNumbers.push(i);
+        }
+
+        return (
+            <div className="bg-white px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                    <div className="text-sm text-gray-700">
+                        Showing{" "}
+                        <span className="font-semibold">{startRecord}</span> to{" "}
+                        <span className="font-semibold">{endRecord}</span> of{" "}
+                        <span className="font-semibold">
+                            {reportData.data.length}
+                        </span>{" "}
+                        results
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <label className="text-sm text-gray-600">
+                            Rows per page:
+                        </label>
+                        <select
+                            value={itemsPerPage}
+                            onChange={(e) => {
+                                setItemsPerPage(Number(e.target.value));
+                                setCurrentPage(1);
+                            }}
+                            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                            <option value={10}>10</option>
+                            <option value={25}>25</option>
+                            <option value={50}>50</option>
+                            <option value={100}>100</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                    <button
+                        onClick={() => setCurrentPage(1)}
+                        disabled={currentPage === 1}
+                        className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        First
+                    </button>
+                    <button
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
+                    >
+                        <ChevronLeft className="w-4 h-4 mr-1" />
+                        Previous
+                    </button>
+
+                    <div className="flex space-x-1">
+                        {startPage > 1 && (
+                            <>
+                                <button
+                                    onClick={() => setCurrentPage(1)}
+                                    className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                >
+                                    1
+                                </button>
+                                {startPage > 2 && (
+                                    <span className="px-3 py-2 text-sm text-gray-500">
+                                        ...
+                                    </span>
+                                )}
+                            </>
+                        )}
+
+                        {pageNumbers.map((number) => (
+                            <button
+                                key={number}
+                                onClick={() => setCurrentPage(number)}
+                                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                                    currentPage === number
+                                        ? "bg-blue-600 text-white border border-blue-600"
+                                        : "text-gray-700 bg-white border border-gray-300 hover:bg-gray-50"
+                                }`}
+                            >
+                                {number}
+                            </button>
+                        ))}
+
+                        {endPage < totalPages && (
+                            <>
+                                {endPage < totalPages - 1 && (
+                                    <span className="px-3 py-2 text-sm text-gray-500">
+                                        ...
+                                    </span>
+                                )}
+                                <button
+                                    onClick={() => setCurrentPage(totalPages)}
+                                    className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                >
+                                    {totalPages}
+                                </button>
+                            </>
+                        )}
+                    </div>
+
+                    <button
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
+                    >
+                        Next
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                    </button>
+                    <button
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        Last
+                    </button>
+                </div>
+            </div>
+        );
+    };
 
     const renderDataTable = () => {
         if (loading) {
@@ -735,34 +1277,99 @@ export default function Reports({
         }
 
         const columns = getTableColumns();
+        const paginatedData = getPaginatedData();
 
         return (
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div className="p-6 border-b border-gray-200 bg-gradient-to-br from-gray-50 to-white">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                        Report Summary
-                    </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {Object.entries(reportData.summary || {}).map(
-                            ([key, value]) => (
-                                <div
-                                    key={key}
-                                    className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
-                                >
-                                    <div className="text-3xl font-bold text-blue-600 mb-1">
-                                        {typeof value === "number"
-                                            ? Math.round(value)
-                                            : value}
-                                    </div>
-                                    <div className="text-xs text-gray-600 uppercase tracking-wide font-medium">
-                                        {key.replace(/_/g, " ")}
-                                    </div>
+                {/* Table Header with Export */}
+                <div className="p-6 border-b border-gray-200 flex items-center justify-between">
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                            {reportTypes.find((r) => r.id === activeTab)?.name}{" "}
+                            Report
+                        </h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                            Total of {reportData.data.length} records
+                        </p>
+                    </div>
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowExportMenu(!showExportMenu)}
+                            disabled={exporting || !reportData?.data?.length}
+                            className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors shadow-sm"
+                        >
+                            <Download className="w-4 h-4 mr-2" />
+                            {exporting ? "Exporting..." : "Export Report"}
+                        </button>
+
+                        {showExportMenu && !exporting && (
+                            <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                                <div className="py-1">
+                                    <button
+                                        onClick={() => exportReport("excel")}
+                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-green-50 transition-colors flex items-center gap-3"
+                                    >
+                                        <FileText className="w-5 h-5 text-green-600" />
+                                        <div>
+                                            <div className="font-medium">
+                                                Export as Excel
+                                            </div>
+                                            <div className="text-xs text-gray-500">
+                                                CSV format
+                                            </div>
+                                        </div>
+                                    </button>
+
+                                    <div className="border-t border-gray-200 my-1"></div>
+
+                                    <button
+                                        onClick={() => exportReport("html")}
+                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-red-50 transition-colors flex items-center gap-3"
+                                    >
+                                        <FileText className="w-5 h-5 text-red-600" />
+                                        <div>
+                                            <div className="font-medium">
+                                                Download PDF
+                                            </div>
+                                            <div className="text-xs text-gray-500">
+                                                Save as PDF via browser
+                                            </div>
+                                        </div>
+                                    </button>
+
+                                    <button
+                                        onClick={() => exportReport("print")}
+                                        className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 transition-colors flex items-center gap-3"
+                                    >
+                                        <svg
+                                            className="w-5 h-5 text-blue-600"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"
+                                            />
+                                        </svg>
+                                        <div>
+                                            <div className="font-medium">
+                                                Print Preview
+                                            </div>
+                                            <div className="text-xs text-gray-500">
+                                                Interactive preview
+                                            </div>
+                                        </div>
+                                    </button>
                                 </div>
-                            )
+                            </div>
                         )}
                     </div>
                 </div>
 
+                {/* Table */}
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead className="bg-gray-50 border-b border-gray-200">
@@ -777,10 +1384,10 @@ export default function Reports({
                                 ))}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200">
-                            {reportData.data.slice(0, 50).map((item, index) => (
+                        <tbody className="divide-y divide-gray-200 bg-white">
+                            {paginatedData.map((item, index) => (
                                 <tr
-                                    key={index}
+                                    key={item.id || index}
                                     className="hover:bg-blue-50 transition-colors"
                                 >
                                     {columns.map((column) => (
@@ -789,8 +1396,11 @@ export default function Reports({
                                             className="px-6 py-4 whitespace-nowrap"
                                         >
                                             {column.key === "id" ? (
-                                                <span className="text-sm text-gray-900">
-                                                    {index + 1}
+                                                <span className="text-sm font-medium text-gray-900">
+                                                    {(currentPage - 1) *
+                                                        itemsPerPage +
+                                                        index +
+                                                        1}
                                                 </span>
                                             ) : (
                                                 renderCellValue(item, column)
@@ -803,40 +1413,34 @@ export default function Reports({
                     </table>
                 </div>
 
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                    <p className="text-sm text-gray-600">
-                        Showing{" "}
-                        <span className="font-semibold text-gray-900">
-                            {Math.min(50, reportData.data.length)}
-                        </span>{" "}
-                        of{" "}
-                        <span className="font-semibold text-gray-900">
-                            {reportData.data.length}
-                        </span>{" "}
-                        results
-                    </p>
-                </div>
+                {/* Pagination */}
+                {renderPagination()}
             </div>
         );
     };
 
     return (
         <AuthenticatedLayout user={auth.user}>
-            <Head title="Reports & Analytics" />
+            <Head title="Reports" />
 
             <div className="py-8 bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    {/* Header */}
                     <div className="mb-8">
                         <div className="flex items-center gap-3 mb-2">
-                            <h1 className="text-3xl font-bold text-gray-900">
-                                Reports & Analytics
-                            </h1>
+                            <div>
+                                <h1 className="text-3xl font-bold text-gray-900">
+                                    Reports
+                                </h1>
+                                <p className="text-gray-600 mt-1">
+                                    Comprehensive reporting and data analysis
+                                    dashboard
+                                </p>
+                            </div>
                         </div>
-                        <p className="text-gray-600 ml-1">
-                            Comprehensive reporting and data analysis dashboard
-                        </p>
                     </div>
 
+                    {/* Report Type Tabs */}
                     <div className="mb-6">
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-2">
                             <div className="flex gap-2 overflow-x-auto">
@@ -863,6 +1467,7 @@ export default function Reports({
                         </div>
                     </div>
 
+                    {/* Content */}
                     {activeTab === "overview" ? (
                         renderOverview()
                     ) : (
@@ -876,7 +1481,6 @@ export default function Reports({
         </AuthenticatedLayout>
     );
 }
-
 function StatCard({ title, value, change, icon: Icon, color, trend }) {
     const colorClasses = {
         blue: "from-blue-500 to-blue-600",
@@ -884,7 +1488,6 @@ function StatCard({ title, value, change, icon: Icon, color, trend }) {
         yellow: "from-yellow-500 to-yellow-600",
         red: "from-red-500 to-red-600",
     };
-
     const trendColors = {
         up: "text-green-600 bg-green-50",
         down: "text-red-600 bg-red-50",

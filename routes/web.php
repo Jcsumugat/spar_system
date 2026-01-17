@@ -11,6 +11,7 @@ use App\Http\Controllers\LabReportController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 
 Route::get('/', function () {
@@ -73,6 +74,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{inspection}', [InspectionController::class, 'show'])->name('show');
     });
 
+    Route::get('/activity-logs', function () {
+        return Inertia::render('ActivityLogs/Index');
+    })->name('activity-logs.index');
+
     Route::prefix('notifications')->name('notifications.')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('index');
         Route::get('/unread', [NotificationController::class, 'getUnread'])->name('unread');
@@ -81,7 +86,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/{notification}', [NotificationController::class, 'destroy'])->name('destroy');
     });
 
-    // Reports routes - moved here, inside the main auth group
     Route::prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [ReportController::class, 'index'])->name('index');
         Route::get('/business', [ReportController::class, 'businessReport'])->name('business');
@@ -91,7 +95,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/activity', [ReportController::class, 'activityReport'])->name('activity');
         Route::get('/barangay', [ReportController::class, 'barangayReport'])->name('barangay');
         Route::get('/trends', [ReportController::class, 'monthlyTrends'])->name('trends');
-        Route::post('/export', [ReportController::class, 'export'])->name('export');
+        Route::match(['get', 'post'], '/export', [ReportController::class, 'export'])->name('export');
         Route::post('/save', [ReportController::class, 'saveReport'])->name('save');
     });
 
