@@ -916,11 +916,14 @@ class ReportController extends Controller
                 case 'docx':
                     // Download Word document
                     return $this->exportWord($data, str_replace('.docx', '', $filename) . '.docx', $type);
+                case 'pdf':
+                    // Direct PDF download using DomPDF
+                    return $this->exportPDF($data, str_replace('.pdf', '', $filename) . '.pdf', $type);
                 case 'print':
                     // Print preview with auto-print dialog
                     return $this->exportPrintableHTML($data, $filename, $type, true);
                 case 'html':
-                    // HTML preview WITHOUT auto-print (for PDF download via browser)
+                    // HTML preview WITHOUT auto-print (for manual browser PDF)
                     return $this->exportPrintableHTML($data, $filename, $type, false);
                 default:
                     return response()->json(['error' => 'Invalid format'], 400);
@@ -937,6 +940,235 @@ class ReportController extends Controller
                 'message' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function exportPDF($data, $filename, $type)
+    {
+        $reportTitle = strtoupper($type) . ' REPORT';
+        $generatedDate = Carbon::now()->format('F d, Y h:i A');
+
+        $inspectorName = 'Health Inspector';
+        if (auth()->check() && auth()->user()) {
+            $inspectorName = htmlspecialchars(auth()->user()->name);
+        }
+
+        $rowCount = count($data);
+
+        // Create HTML for PDF
+        $html = '
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            @page {
+                size: landscape;
+                margin: 1cm;
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: Arial, sans-serif;
+                font-size: 9px;
+                color: #1a1a1a;
+                line-height: 1.4;
+            }
+
+            .print-header {
+                text-align: center;
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+                border-bottom: 3px solid #2563eb;
+            }
+
+            .print-header h1 {
+                font-size: 20px;
+                font-weight: 700;
+                color: #1e40af;
+                margin-bottom: 5px;
+            }
+
+            .print-header .subtitle {
+                font-size: 10px;
+                color: #64748b;
+                margin-bottom: 10px;
+            }
+
+            .print-header h2 {
+                font-size: 16px;
+                font-weight: 600;
+                color: #1e293b;
+                margin: 8px 0 5px 0;
+            }
+
+            .print-header .meta {
+                font-size: 9px;
+                color: #64748b;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 15px 0;
+                font-size: 8px;
+            }
+
+            th {
+                background-color: #2563eb;
+                color: white;
+                font-weight: 600;
+                text-align: left;
+                padding: 8px 6px;
+                border: 1px solid #2563eb;
+                font-size: 8px;
+                text-transform: uppercase;
+            }
+
+            td {
+                padding: 6px;
+                border: 1px solid #cbd5e1;
+                color: #334155;
+            }
+
+            tr:nth-child(even) {
+                background-color: #f8fafc;
+            }
+
+            .footer {
+                margin-top: 30px;
+            }
+
+            .total-section {
+                text-align: center;
+                margin: 20px auto 40px auto;
+                padding: 15px;
+                background: #eff6ff;
+                border: 2px solid #3b82f6;
+                max-width: 300px;
+            }
+
+            .total-section .icon {
+                font-size: 24px;
+                margin-bottom: 5px;
+            }
+
+            .total-section .label {
+                font-weight: 700;
+                font-size: 14px;
+                color: #1e40af;
+            }
+
+            .signature-section {
+                text-align: right;
+                padding-right: 60px;
+                margin-top: 50px;
+            }
+
+            .signature-box {
+                display: inline-block;
+                text-align: center;
+                min-width: 250px;
+            }
+
+            .signature-label {
+                font-size: 9px;
+                color: #64748b;
+                margin-bottom: 25px;
+                font-weight: 500;
+                text-transform: uppercase;
+                text-align: left;
+                padding-left: 15px;
+            }
+
+            .signature-line {
+                border-bottom: 1.5px solid #1e293b;
+                margin: 0 auto 5px auto;
+                width: 100px;
+            }
+
+            .signature-name {
+                font-weight: 700;
+                color: #1e293b;
+                font-size: 12px;
+            }
+
+            .signature-title {
+                font-weight: 600;
+                color: #475569;
+                font-size: 9px;
+                text-transform: uppercase;
+                margin-top: 3px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="print-header">
+            <h1>TIBIAO RURAL HEALTH UNIT</h1>
+            <p class="subtitle">Sanitary Permit Certification System</p>
+            <h2>' . $reportTitle . '</h2>
+            <p class="meta">Generated on ' . $generatedDate . '</p>
+        </div>
+
+        <table>
+            <thead>
+                <tr>';
+
+        // Add headers
+        $headers = $this->getColumnHeaders($type);
+        foreach ($headers as $header) {
+            $html .= '<th>' . htmlspecialchars($header) . '</th>';
+        }
+
+        $html .= '</tr>
+            </thead>
+            <tbody>';
+
+        // Add data rows
+        foreach ($data as $index => $row) {
+            $html .= '<tr>';
+            $rowData = $this->formatRowDataForExport($row, $type, $index);
+
+            foreach ($rowData as $cell) {
+                $cellValue = is_null($cell) || $cell === '' ? 'N/A' : (string)$cell;
+                $html .= '<td>' . htmlspecialchars($cellValue) . '</td>';
+            }
+
+            $html .= '</tr>';
+        }
+
+        $html .= '</tbody>
+        </table>
+
+        <div class="footer">
+            <div class="total-section">
+                <div class="icon">📊</div>
+                <div class="label">Total Records: ' . $rowCount . '</div>
+            </div>
+
+            <div class="signature-section">
+                <div class="signature-box">
+                    <div class="signature-label">Prepared by:</div>
+                    <div class="signature-line">
+                        <div class="signature-name">' . $inspectorName . '</div>
+                    </div>
+                    <div class="signature-title">Lab Inspector</div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>';
+
+        // Generate PDF using DomPDF
+        $pdf = PDF::loadHTML($html);
+        $pdf->setPaper('A4', 'landscape');
+
+        // Return PDF download
+        return $pdf->download($filename);
     }
 
     private function exportPrintableHTML($data, $filename, $type, $autoPrint = false)

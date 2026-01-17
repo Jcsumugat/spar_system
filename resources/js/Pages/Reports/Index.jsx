@@ -496,7 +496,7 @@ export default function Reports({
                 return;
             }
 
-            // For HTML/PDF preview, also open in new window
+            // For HTML preview (manual browser PDF), also open in new window
             if (format === "html") {
                 const params = new URLSearchParams({
                     type: activeTab,
@@ -514,7 +514,7 @@ export default function Reports({
                 .querySelector('meta[name="csrf-token"]')
                 ?.getAttribute("content");
 
-            // For other formats (CSV, Excel), use fetch for download
+            // For other formats (CSV, Excel, PDF), use fetch for download
             const response = await fetch("/reports/export", {
                 method: "POST",
                 headers: {
@@ -547,7 +547,7 @@ export default function Reports({
                 throw new Error(errorMessage);
             }
 
-            // For direct downloads (Excel, CSV)
+            // For direct downloads (Excel, CSV, PDF)
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
@@ -1323,7 +1323,7 @@ export default function Reports({
                                     <div className="border-t border-gray-200 my-1"></div>
 
                                     <button
-                                        onClick={() => exportReport("html")}
+                                        onClick={() => exportReport("pdf")}
                                         className="w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-red-50 transition-colors flex items-center gap-3"
                                     >
                                         <FileText className="w-5 h-5 text-red-600" />
@@ -1332,10 +1332,12 @@ export default function Reports({
                                                 Download PDF
                                             </div>
                                             <div className="text-xs text-gray-500">
-                                                Save as PDF via browser
+                                                Auto-download PDF file
                                             </div>
                                         </div>
                                     </button>
+
+                                    <div className="border-t border-gray-200 my-1"></div>
 
                                     <button
                                         onClick={() => exportReport("print")}
@@ -1356,10 +1358,10 @@ export default function Reports({
                                         </svg>
                                         <div>
                                             <div className="font-medium">
-                                                Print Preview
+                                                Print Document
                                             </div>
                                             <div className="text-xs text-gray-500">
-                                                Interactive preview
+                                                Auto-opens print dialog
                                             </div>
                                         </div>
                                     </button>
